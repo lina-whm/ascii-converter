@@ -114,14 +114,20 @@ export function FileUploader({ onFileLoad }: FileUploaderProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch(urlInput);
-      if (!response.ok) throw new Error("Failed to fetch");
+      const response = await fetch(urlInput, {
+        mode: "cors",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
       const blob = await response.blob();
       const mimeType = blob.type;
 
       if (!ALLOWED_TYPES.includes(mimeType)) {
         toast.error(t("error.invalid"));
+        setIsLoading(false);
         return;
       }
 
@@ -133,12 +139,22 @@ export function FileUploader({ onFileLoad }: FileUploaderProps) {
         onFileLoad(file, reader.result as string, isGif);
         setShowUrlInput(false);
         setUrlInput("");
+        setIsLoading(false);
+      };
+
+      reader.onerror = () => {
+        toast.error(t("error.parse"));
+        setIsLoading(false);
       };
 
       reader.readAsDataURL(file);
-    } catch {
-      toast.error(t("error.parse"));
-    } finally {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (message.includes("Failed to fetch") || message.includes("CORS") || message.includes("NetworkError")) {
+        toast.error("CORS error: Cannot load image from this URL. Try downloading the image first.");
+      } else {
+        toast.error(t("error.parse"));
+      }
       setIsLoading(false);
     }
   }, [urlInput, onFileLoad, t]);

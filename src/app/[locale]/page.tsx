@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { ImagePlus, X, Globe } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import { FileUploader } from "@/components/converter/FileUploader";
 import { SettingsPanel } from "@/components/converter/SettingsPanel";
 import { AsciiPreview } from "@/components/converter/AsciiPreview";
@@ -23,7 +23,7 @@ interface FileItem {
 }
 
 export default function Home() {
-  const { settings, language, updateSettings, updateLanguage } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
   const [isConverting, setIsConverting] = useState(false);
@@ -45,7 +45,7 @@ export default function Home() {
       setGifFrames([]);
       setIsPlaying(false);
     }
-  }, [activeFileId, activeFile?.isGif]);
+  }, [activeFile?.gifFrames]);
 
   const convertToAscii = useCallback(
     async (dataUrl: string, convertSettings: AsciiSettings): Promise<string> => {
@@ -148,25 +148,34 @@ export default function Home() {
 
       if (activeFile?.dataUrl) {
         setIsConverting(true);
-        const ascii = await convertToAscii(activeFile.dataUrl, updated);
-        setIsConverting(false);
-
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === activeFileId ? { ...f, ascii, settings: updated } : f
-          )
-        );
 
         if (activeFile.isGif) {
-          setGifFrames((prev) => {
-            const updated = [...prev];
-            updated[currentFrame] = ascii;
-            return updated;
-          });
+          const frames = await extractGifFrames(activeFile.dataUrl, updated.width);
+          const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, updated));
+          const newGifDelays = frames.map((frame) => frame.delay);
+          
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === activeFileId 
+                ? { ...f, ascii: newGifFrames[0], gifFrames: newGifFrames, gifDelays: newGifDelays, settings: updated } 
+                : f
+            )
+          );
+          setGifFrames(newGifFrames);
+          setCurrentFrame(0);
+        } else {
+          const ascii = await convertToAscii(activeFile.dataUrl, updated);
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === activeFileId ? { ...f, ascii, settings: updated } : f
+            )
+          );
         }
+
+        setIsConverting(false);
       }
     },
-    [activeFile, activeFileId, currentSettings, convertToAscii, updateSettings, currentFrame]
+    [activeFile, activeFileId, currentSettings, convertToAscii, updateSettings]
   );
 
   const handleRemoveFile = useCallback((id: string) => {
@@ -235,6 +244,9 @@ export default function Home() {
                 ascii={currentAscii}
                 isGif={activeFile.isGif}
                 canExport={!!currentAscii}
+                gifFrames={activeFile.gifFrames}
+                fontSize={currentSettings.fontSize}
+                invertBrightness={currentSettings.invertBrightness}
               />
             )}
           </div>

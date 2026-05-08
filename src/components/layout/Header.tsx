@@ -3,11 +3,17 @@
 import { useTranslations } from "next-intl";
 import { Globe } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export function Header() {
   const t = useTranslations("header");
   const router = useRouter();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleLanguage = () => {
     const segments = pathname.split("/");
@@ -15,7 +21,7 @@ export function Header() {
     router.push(segments.join("/"));
   };
 
-  const currentLocale = pathname.split("/")[1]?.toUpperCase() || "EN";
+  const currentLocale = mounted ? pathname.split("/")[1]?.toUpperCase() || "EN" : "EN";
 
   return (
     <header className="bg-[var(--bg-secondary)] border-b border-[var(--border)] py-3 px-4">
@@ -23,7 +29,7 @@ export function Header() {
         <div className="font-mono text-xs">
           <pre className="text-[var(--accent-green)] leading-none">
 {`┌─────────────┐
-│ CONVERTER  │
+│ CONVERTER   │
 └─────────────┘`}
           </pre>
         </div>

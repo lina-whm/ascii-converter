@@ -55,7 +55,11 @@
     "downloadPng": "Скачать .png",
     "downloadGif": "Скачать .gif",
     "copied": "Скопировано в буфер обмена!",
-    "saved": "Файл сохранён!"
+    "saved": "Файл сохранён!",
+    "error": {
+      "copy": "Не удалось скопировать",
+      "save": "Не удалось сохранить файл"
+    }
   },
   "queue": {
     "title": "Файлы",
@@ -64,7 +68,8 @@
   },
   "footer": {
     "madeWith": "Сделано с ♥",
-    "by": "автор"
+    "by": "автор",
+    "author": "Polina"
   },
   "about": {
     "title": "О ASCII Converter",

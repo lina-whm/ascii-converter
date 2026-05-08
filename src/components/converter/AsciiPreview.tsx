@@ -81,7 +81,7 @@ export function AsciiPreview({
                   settings.invertBrightness && "text-[var(--bg-primary)]"
                 )}
                 style={{
-                  textShadow: settings.invertBrightness ? "none" : "0 0 5px rgba(0,255,65,0.5)",
+                  textShadow: settings.invertBrightness ? "none" : "0 0 5px var(--accent-green-glow, rgba(0,255,65,0.5))",
                 }}
               />
             </div>

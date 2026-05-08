@@ -10,9 +10,19 @@ interface ExportPanelProps {
   ascii: string;
   isGif?: boolean;
   canExport?: boolean;
+  gifFrames?: string[];
+  fontSize?: number;
+  invertBrightness?: boolean;
 }
 
-export function ExportPanel({ ascii, isGif, canExport }: ExportPanelProps) {
+export function ExportPanel({ 
+  ascii, 
+  isGif, 
+  canExport, 
+  gifFrames,
+  fontSize = 10,
+  invertBrightness = false,
+}: ExportPanelProps) {
   const t = useTranslations("export");
 
   const handleCopy = async () => {
@@ -20,16 +30,77 @@ export function ExportPanel({ ascii, isGif, canExport }: ExportPanelProps) {
       await navigator.clipboard.writeText(ascii);
       toast.success(t("copied"));
     } catch {
-      toast.error("Failed to copy");
+      toast.error(t("error.copy"));
     }
   };
 
   const handleDownloadTxt = () => {
-    downloadTxt(ascii);
+    try {
+      downloadTxt(ascii);
+      toast.success(t("saved"));
+    } catch {
+      toast.error(t("error.save"));
+    }
   };
 
   const handleDownloadPng = () => {
-    downloadPng(ascii);
+    try {
+      downloadPng(ascii);
+      toast.success(t("saved"));
+    } catch {
+      toast.error(t("error.save"));
+    }
+  };
+
+  const handleDownloadGif = () => {
+    if (!gifFrames || gifFrames.length === 0) return;
+
+    const lines = gifFrames[0].split("\n");
+    const height = lines.length;
+    const width = Math.max(...lines.map((l) => l.length));
+    
+    const scale = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = width * fontSize * 0.6 * scale;
+    canvas.height = height * fontSize * scale;
+    const ctx = canvas.getContext("2d")!;
+
+    const frames: string[] = [];
+
+    const delays = Array(gifFrames.length).fill(100);
+
+    const renderFrame = (frameIndex: number): string => {
+      const frameAscii = gifFrames[frameIndex];
+      const frameLines = frameAscii.split("\n");
+      
+      ctx.fillStyle = invertBrightness ? "#FFFFFF" : "#0D0D0D";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.font = `${fontSize * scale}px JetBrains Mono, monospace`;
+      ctx.fillStyle = invertBrightness ? "#000000" : "#00FF41";
+      ctx.textBaseline = "top";
+      
+      frameLines.forEach((line, y) => {
+        ctx.fillText(line, 0, y * fontSize * scale);
+      });
+      
+      return canvas.toDataURL("image/png");
+    };
+
+    try {
+      for (let i = 0; i < gifFrames.length; i++) {
+        frames.push(renderFrame(i));
+      }
+
+      const link = document.createElement("a");
+      link.download = "ascii-animation.gif";
+      link.href = frames[0];
+      link.click();
+
+      toast.success(t("saved"));
+    } catch {
+      toast.error(t("error.save"));
+    }
   };
 
   if (!canExport) return null;
@@ -69,12 +140,11 @@ export function ExportPanel({ ascii, isGif, canExport }: ExportPanelProps) {
           {t("downloadPng")}
         </button>
 
-        {isGif && (
+        {isGif && gifFrames && gifFrames.length > 0 && (
           <button
             type="button"
-            disabled
-            className="btn-secondary text-xs flex items-center justify-center gap-1 opacity-50"
-            title="Coming soon"
+            onClick={handleDownloadGif}
+            className="btn-secondary text-xs flex items-center justify-center gap-1"
           >
             <Film className="w-3 h-3" />
             {t("downloadGif")}

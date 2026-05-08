@@ -55,7 +55,11 @@
     "downloadPng": "Download .png",
     "downloadGif": "Download .gif",
     "copied": "Copied to clipboard!",
-    "saved": "File saved!"
+    "saved": "File saved!",
+    "error": {
+      "copy": "Failed to copy",
+      "save": "Failed to save file"
+    }
   },
   "queue": {
     "title": "Files",
@@ -64,7 +68,8 @@
   },
   "footer": {
     "madeWith": "Made with ♥",
-    "by": "by"
+    "by": "by",
+    "author": "Polina"
   },
   "about": {
     "title": "About ASCII Converter",
