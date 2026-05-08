@@ -7,6 +7,7 @@ import { SettingsPanel } from "@/components/converter/SettingsPanel";
 import { AsciiPreview } from "@/components/converter/AsciiPreview";
 import { ExportPanel } from "@/components/converter/ExportPanel";
 import { AsciiSettings, DEFAULT_SETTINGS, imageDataToAscii } from "@/lib/ascii-converter";
+import { extractGifFrames } from "@/lib/gif-processor";
 import { useSettings } from "@/hooks/useSettings";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,8 @@ interface FileItem {
   isGif: boolean;
   settings: AsciiSettings;
   ascii: string;
+  gifFrames?: string[];
+  gifDelays?: number[];
 }
 
 export default function Home() {
@@ -32,6 +35,17 @@ export default function Home() {
   const activeFile = files.find((f) => f.id === activeFileId);
   const currentSettings = activeFile?.settings || settings;
   const currentAscii = activeFile?.ascii || "";
+
+  useEffect(() => {
+    if (activeFile?.isGif && activeFile.gifFrames) {
+      setGifFrames(activeFile.gifFrames);
+      setCurrentFrame(0);
+      setIsPlaying(true);
+    } else {
+      setGifFrames([]);
+      setIsPlaying(false);
+    }
+  }, [activeFileId, activeFile?.isGif]);
 
   const convertToAscii = useCallback(
     async (dataUrl: string, convertSettings: AsciiSettings): Promise<string> => {
@@ -75,7 +89,20 @@ export default function Home() {
       const newSettings = { ...settings, charset: settings.charset || DEFAULT_SETTINGS.charset };
       
       setIsConverting(true);
-      const ascii = await convertToAscii(dataUrl, newSettings);
+
+      let ascii = "";
+      let gifFrames: string[] | undefined;
+      let gifDelays: number[] | undefined;
+
+      if (isGif) {
+        const frames = await extractGifFrames(dataUrl, newSettings.width);
+        gifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, newSettings));
+        gifDelays = frames.map((frame) => frame.delay);
+        ascii = gifFrames[0] || "";
+      } else {
+        ascii = await convertToAscii(dataUrl, newSettings);
+      }
+
       setIsConverting(false);
 
       if (files.length >= 5) {
@@ -89,13 +116,15 @@ export default function Home() {
         isGif,
         settings: newSettings,
         ascii,
+        gifFrames,
+        gifDelays,
       };
 
       setFiles((prev) => [...prev, newFile]);
       setActiveFileId(id);
 
-      if (isGif) {
-        setGifFrames([ascii]);
+      if (isGif && gifFrames) {
+        setGifFrames(gifFrames);
         setCurrentFrame(0);
         setIsPlaying(true);
       }
@@ -167,11 +196,14 @@ export default function Home() {
     }
 
     let lastTime = performance.now();
-    const delays = [100];
+    const delays = activeFile?.gifDelays || Array(gifFrames.length).fill(100);
+    let frameIndex = 0;
 
     const animate = (time: number) => {
-      if (time - lastTime >= delays[0]) {
-        setCurrentFrame((prev) => (prev + 1) % gifFrames.length);
+      const delay = delays[frameIndex] || 100;
+      if (time - lastTime >= delay) {
+        frameIndex = (frameIndex + 1) % gifFrames.length;
+        setCurrentFrame(frameIndex);
         lastTime = time;
       }
       animationRef.current = requestAnimationFrame(animate);
@@ -184,7 +216,7 @@ export default function Home() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isPlaying, gifFrames.length]);
+  }, [isPlaying, gifFrames.length, activeFile?.gifDelays]);
 
   return (
     <div className="flex-1 p-4 md:p-6">
