@@ -1,0 +1,73 @@
+{
+  "app": {
+    "title": "ASCII Converter",
+    "subtitle": "ИЗОБРАЖЕНИЕ В ASCII"
+  },
+  "header": {
+    "about": "О проекте",
+    "github": "GitHub"
+  },
+  "upload": {
+    "dropTitle": "Перетащите файл",
+    "dropSubtitle": "или нажмите для выбора",
+    "paste": "Вставить из буфера (Ctrl+V)",
+    "url": "Загрузить по URL",
+    "demo": "Загрузить пример",
+    "supported": "JPEG, PNG, WebP, GIF (макс 30МБ)",
+    "error": {
+      "invalid": "Неверный формат файла",
+      "size": "Файл слишком большой (макс 30МБ)",
+      "parse": "Не удалось обработать изображение"
+    },
+    "urlPlaceholder": "Введите URL изображения...",
+    "loadBtn": "Загрузить"
+  },
+  "settings": {
+    "title": "Настройки",
+    "width": "Ширина (символов)",
+    "charset": "Набор символов",
+    "charsetCustom": "Свой",
+    "invert": "Инвертировать яркость",
+    "fontSize": "Размер шрифта",
+    "smoothing": "Сглаживание",
+    "presets": {
+      "dense": "Плотный █▓▒░",
+      "classic": "Классический .:-=+*#%@",
+      "braille": "Брайлевский ⣿⣾"
+    }
+  },
+  "preview": {
+    "title": "Предпросмотр",
+    "loading": "Конвертация...",
+    "noFile": "Изображение не загружено"
+  },
+  "gif": {
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "prev": "Предыдущий кадр",
+    "next": "Следующий кадр",
+    "frame": "Кадр {current} из {total}"
+  },
+  "export": {
+    "title": "Экспорт",
+    "copy": "Копировать текст",
+    "downloadTxt": "Скачать .txt",
+    "downloadPng": "Скачать .png",
+    "downloadGif": "Скачать .gif",
+    "copied": "Скопировано в буфер обмена!",
+    "saved": "Файл сохранён!"
+  },
+  "queue": {
+    "title": "Файлы",
+    "empty": "Файлы не загружены",
+    "remove": "Удалить"
+  },
+  "footer": {
+    "madeWith": "Сделано с ♥",
+    "by": "автор"
+  },
+  "about": {
+    "title": "О ASCII Converter",
+    "description": "Конвертируйте любое изображение в ASCII-арт мгновенно"
+  }
+}

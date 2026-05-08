@@ -1,0 +1,73 @@
+{
+  "app": {
+    "title": "ASCII Converter",
+    "subtitle": "IMAGE TO ASCII"
+  },
+  "header": {
+    "about": "About",
+    "github": "GitHub"
+  },
+  "upload": {
+    "dropTitle": "Drop file here",
+    "dropSubtitle": "or click to select",
+    "paste": "Paste from clipboard (Ctrl+V)",
+    "url": "Load from URL",
+    "demo": "Load demo",
+    "supported": "JPEG, PNG, WebP, GIF (max 30MB)",
+    "error": {
+      "invalid": "Invalid file format",
+      "size": "File too large (max 30MB)",
+      "parse": "Failed to parse image"
+    },
+    "urlPlaceholder": "Enter image URL...",
+    "loadBtn": "Load"
+  },
+  "settings": {
+    "title": "Settings",
+    "width": "Width (chars)",
+    "charset": "Charset",
+    "charsetCustom": "Custom",
+    "invert": "Invert brightness",
+    "fontSize": "Font size",
+    "smoothing": "Smoothing",
+    "presets": {
+      "dense": "Dense █▓▒░",
+      "classic": "Classic .:-=+*#%@",
+      "braille": "Braille ⣿⣾"
+    }
+  },
+  "preview": {
+    "title": "Preview",
+    "loading": "Converting...",
+    "noFile": "No image loaded"
+  },
+  "gif": {
+    "play": "Play",
+    "pause": "Pause",
+    "prev": "Previous frame",
+    "next": "Next frame",
+    "frame": "Frame {current} of {total}"
+  },
+  "export": {
+    "title": "Export",
+    "copy": "Copy text",
+    "downloadTxt": "Download .txt",
+    "downloadPng": "Download .png",
+    "downloadGif": "Download .gif",
+    "copied": "Copied to clipboard!",
+    "saved": "File saved!"
+  },
+  "queue": {
+    "title": "Files",
+    "empty": "No files loaded",
+    "remove": "Remove"
+  },
+  "footer": {
+    "madeWith": "Made with ♥",
+    "by": "by"
+  },
+  "about": {
+    "title": "About ASCII Converter",
+    "description": "Convert any image to ASCII art instantly"
+  }
+}

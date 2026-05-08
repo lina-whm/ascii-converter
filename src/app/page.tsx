@@ -1,65 +1,261 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useCallback, useEffect, useRef } from "react";
+import { ImagePlus, X, Globe } from "lucide-react";
+import { FileUploader } from "@/components/converter/FileUploader";
+import { SettingsPanel } from "@/components/converter/SettingsPanel";
+import { AsciiPreview } from "@/components/converter/AsciiPreview";
+import { ExportPanel } from "@/components/converter/ExportPanel";
+import { AsciiSettings, DEFAULT_SETTINGS, imageDataToAscii } from "@/lib/ascii-converter";
+import { useSettings } from "@/hooks/useSettings";
+import { cn } from "@/lib/utils";
+
+interface FileItem {
+  id: string;
+  file: File;
+  dataUrl: string;
+  isGif: boolean;
+  settings: AsciiSettings;
+  ascii: string;
+}
 
 export default function Home() {
+  const { settings, language, updateSettings, updateLanguage } = useSettings();
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [activeFileId, setActiveFileId] = useState<string | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
+  const [gifFrames, setGifFrames] = useState<string[]>([]);
+  const [currentFrame, setCurrentFrame] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const animationRef = useRef<number | null>(null);
+
+  const activeFile = files.find((f) => f.id === activeFileId);
+  const currentSettings = activeFile?.settings || settings;
+  const currentAscii = activeFile?.ascii || "";
+
+  const convertToAscii = useCallback(
+    async (dataUrl: string, convertSettings: AsciiSettings): Promise<string> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d")!;
+          
+          const aspectRatio = img.width / img.height;
+          const targetWidth = convertSettings.width;
+          const targetHeight = Math.round(targetWidth / aspectRatio / 2);
+          
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          
+          if (convertSettings.smoothing) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+          } else {
+            ctx.imageSmoothingEnabled = false;
+          }
+          
+          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+          
+          const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+          const ascii = imageDataToAscii(imageData, convertSettings);
+          resolve(ascii);
+        };
+        img.onerror = () => resolve("");
+        img.src = dataUrl;
+      });
+    },
+    []
+  );
+
+  const handleFileLoad = useCallback(
+    async (file: File, dataUrl: string, isGif: boolean) => {
+      const id = `${file.name}-${Date.now()}`;
+      const newSettings = { ...settings, charset: settings.charset || DEFAULT_SETTINGS.charset };
+      
+      setIsConverting(true);
+      const ascii = await convertToAscii(dataUrl, newSettings);
+      setIsConverting(false);
+
+      if (files.length >= 5) {
+        setFiles((prev) => prev.slice(1));
+      }
+
+      const newFile: FileItem = {
+        id,
+        file,
+        dataUrl,
+        isGif,
+        settings: newSettings,
+        ascii,
+      };
+
+      setFiles((prev) => [...prev, newFile]);
+      setActiveFileId(id);
+
+      if (isGif) {
+        setGifFrames([ascii]);
+        setCurrentFrame(0);
+        setIsPlaying(true);
+      }
+    },
+    [files.length, settings, convertToAscii]
+  );
+
+  const handleSettingsChange = useCallback(
+    async (newSettings: Partial<AsciiSettings>) => {
+      const updated = { ...currentSettings, ...newSettings };
+      
+      if (activeFile) {
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === activeFileId ? { ...f, settings: updated } : f
+          )
+        );
+      } else {
+        updateSettings(newSettings);
+      }
+
+      if (activeFile?.dataUrl) {
+        setIsConverting(true);
+        const ascii = await convertToAscii(activeFile.dataUrl, updated);
+        setIsConverting(false);
+
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === activeFileId ? { ...f, ascii, settings: updated } : f
+          )
+        );
+
+        if (activeFile.isGif) {
+          setGifFrames((prev) => {
+            const updated = [...prev];
+            updated[currentFrame] = ascii;
+            return updated;
+          });
+        }
+      }
+    },
+    [activeFile, activeFileId, currentSettings, convertToAscii, updateSettings, currentFrame]
+  );
+
+  const handleRemoveFile = useCallback((id: string) => {
+    setFiles((prev) => {
+      const remaining = prev.filter((f) => f.id !== id);
+      if (activeFileId === id) {
+        setActiveFileId(remaining[0]?.id || null);
+      }
+      return remaining;
+    });
+  }, [activeFileId]);
+
+  const handlePlayPause = useCallback(() => {
+    setIsPlaying((prev) => !prev);
+  }, []);
+
+  const handleFrameChange = useCallback((frame: number) => {
+    setCurrentFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    if (!isPlaying || gifFrames.length <= 1) {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      return;
+    }
+
+    let lastTime = performance.now();
+    const delays = [100];
+
+    const animate = (time: number) => {
+      if (time - lastTime >= delays[0]) {
+        setCurrentFrame((prev) => (prev + 1) % gifFrames.length);
+        lastTime = time;
+      }
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isPlaying, gifFrames.length]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="flex-1 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
+            <FileUploader onFileLoad={handleFileLoad} />
+            
+            <SettingsPanel
+              settings={currentSettings}
+              onSettingsChange={handleSettingsChange}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            
+            {activeFile && (
+              <ExportPanel
+                ascii={currentAscii}
+                isGif={activeFile.isGif}
+                canExport={!!currentAscii}
+              />
+            )}
+          </div>
+
+          <div className="lg:col-span-2">
+            <AsciiPreview
+              ascii={currentAscii}
+              settings={currentSettings}
+              isLoading={isConverting}
+              isGif={activeFile?.isGif}
+              gifFrames={gifFrames}
+              currentFrame={currentFrame}
+              isPlaying={isPlaying}
+              onFrameChange={handleFrameChange}
+              onPlayPause={handlePlayPause}
+            />
+          </div>
         </div>
-      </main>
+
+        {files.length > 0 && (
+          <div className="mt-4">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                <ImagePlus className="w-4 h-4" />
+                <span>Files:</span>
+              </div>
+              {files.map((file) => (
+                <button
+                  key={file.id}
+                  onClick={() => setActiveFileId(file.id)}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-1.5 border rounded text-xs whitespace-nowrap",
+                    activeFileId === file.id
+                      ? "border-[var(--accent-green)] text-[var(--accent-green)]"
+                      : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]"
+                  )}
+                >
+                  <span className="max-w-[100px] truncate">{file.file.name}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveFile(file.id);
+                    }}
+                    className="text-[var(--text-muted)] hover:text-[var(--error)]"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
