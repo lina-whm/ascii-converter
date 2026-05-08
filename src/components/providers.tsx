@@ -1,11 +1,8 @@
 "use client";
 
 import { ReactNode } from "react";
-import { NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider, useLocale } from "next-intl";
 import { Toaster } from "sonner";
-import { useSettings } from "@/hooks/useSettings";
-import { getMessages } from "next-intl/server";
-import { useEffect, useState } from "react";
 import en from "@/i18n/messages/en.json";
 import ru from "@/i18n/messages/ru.json";
 
@@ -15,14 +12,19 @@ interface ProvidersProps {
   children: ReactNode;
 }
 
-export function Providers({ children }: ProvidersProps) {
-  const { language, updateLanguage } = useSettings();
+function NextIntlProvider({ children }: { children: ReactNode }) {
+  const locale = useLocale();
 
   return (
-    <NextIntlClientProvider
-      locale={language}
-      messages={messages[language as keyof typeof messages]}
-    >
+    <NextIntlClientProvider locale={locale} messages={messages[locale as keyof typeof messages]}>
+      {children}
+    </NextIntlClientProvider>
+  );
+}
+
+export function Providers({ children }: ProvidersProps) {
+  return (
+    <NextIntlProvider>
       <Toaster
         position="bottom-right"
         theme="dark"
@@ -37,6 +39,6 @@ export function Providers({ children }: ProvidersProps) {
         }}
       />
       {children}
-    </NextIntlClientProvider>
+    </NextIntlProvider>
   );
 }

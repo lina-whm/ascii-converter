@@ -2,14 +2,20 @@
 
 import { useTranslations } from "next-intl";
 import { Globe } from "lucide-react";
-import { useSettings } from "@/hooks/useSettings";
+import { useLocale, useTranslations as useServerTranslations } from "next-intl";
+import { useRouter, usePathname } from "next/navigation";
 
 export function Header() {
   const t = useTranslations("header");
-  const { language, updateLanguage } = useSettings();
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const toggleLanguage = () => {
-    updateLanguage(language === "en" ? "ru" : "en");
+    const newLocale = locale === "en" ? "ru" : "en";
+    const segments = pathname.split("/");
+    segments[1] = newLocale;
+    router.push(segments.join("/"));
   };
 
   return (
@@ -43,7 +49,7 @@ export function Header() {
             className="flex items-center gap-1 text-[var(--text-secondary)] hover:text-[var(--accent-orange)] transition-colors"
           >
             <Globe className="w-3 h-3" />
-            {language.toUpperCase()}
+            {locale.toUpperCase()}
           </button>
         </nav>
       </div>
