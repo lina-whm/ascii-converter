@@ -27,6 +27,7 @@
     "width": "Width (chars)",
     "charset": "Charset",
     "charsetCustom": "Custom",
+    "colorMode": "Color Mode",
     "invert": "Invert brightness",
     "fontSize": "Font size",
     "smoothing": "Smoothing",

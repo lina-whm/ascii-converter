@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useCallback, useRef, useEffect } from "react";
-import { AsciiSettings, DEFAULT_CHARSETS } from "@/lib/ascii-converter";
+import { AsciiSettings, DEFAULT_CHARSETS, COLOR_MODES, ColorMode } from "@/lib/ascii-converter";
 import { cn } from "@/lib/utils";
 
 interface SettingsPanelProps {
@@ -127,6 +127,31 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
             }
             className="input-field text-xs"
           />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs text-[var(--text-secondary)]">{t("colorMode") || "Color Mode"}</label>
+        <div className="grid grid-cols-2 gap-2">
+          {COLOR_MODES.map((mode) => (
+            <button
+              key={mode.value}
+              type="button"
+              className={cn(
+                "text-xs p-2 border transition-all flex items-center gap-2",
+                settings.colorMode === mode.value
+                  ? "border-[var(--accent-green)] text-[var(--accent-green)]"
+                  : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]"
+              )}
+              onClick={() => onSettingsChange({ colorMode: mode.value as ColorMode })}
+            >
+              <span
+                className="w-4 h-4 rounded-full border border-[var(--border)]"
+                style={{ backgroundColor: mode.color }}
+              />
+              <span className="truncate">{mode.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
