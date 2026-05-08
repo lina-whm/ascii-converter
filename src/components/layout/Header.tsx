@@ -37,7 +37,7 @@ export function Header() {
 
         <nav className="flex items-center gap-4 text-xs">
           <a
-            href="/about"
+            href={`/${currentLocale.toLowerCase()}/about`}
             className="text-[var(--text-secondary)] hover:text-[var(--accent-green)] transition-colors"
           >
             {t("about")}

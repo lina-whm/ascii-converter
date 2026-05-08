@@ -6,7 +6,10 @@ import { Toaster } from "sonner";
 import en from "@/i18n/messages/en.json";
 import ru from "@/i18n/messages/ru.json";
 
-const messages = { en, ru };
+const allMessages = {
+  en,
+  ru,
+};
 
 interface ProvidersProps {
   children: ReactNode;
@@ -14,8 +17,11 @@ interface ProvidersProps {
 }
 
 export function Providers({ children, locale = "en" }: ProvidersProps) {
+  const safeLocale = locale && allMessages[locale as keyof typeof allMessages] ? locale : "en";
+  const messages = allMessages[safeLocale as keyof typeof allMessages];
+
   return (
-    <NextIntlClientProvider locale={locale} messages={messages[locale as keyof typeof messages]}>
+    <NextIntlClientProvider locale={safeLocale} messages={messages}>
       <Toaster
         position="bottom-right"
         theme="dark"

@@ -2,21 +2,23 @@
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 
 export default function AboutPage() {
   const t = useTranslations("about");
   const tFooter = useTranslations("footer");
+  const locale = useLocale();
 
   return (
     <div className="flex-1 p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         <Link
-          href="/"
+          href={`/${locale}`}
           className="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] hover:text-[var(--accent-green)] transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Converter
+          {t("back")}
         </Link>
 
         <div className="space-y-8">
@@ -69,7 +71,7 @@ export default function AboutPage() {
 
           <div className="text-center">
             <Link
-              href="/"
+              href={`/${locale}`}
               className="btn-primary inline-flex items-center gap-2"
             >
               {t("tryIt")}
