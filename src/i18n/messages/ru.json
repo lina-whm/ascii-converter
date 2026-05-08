@@ -69,10 +69,18 @@
   "footer": {
     "madeWith": "Сделано с ♥",
     "by": "автор",
-    "author": "Polina"
+    "author": "Полина",
+    "authorUrl": "https://github.com/lina-whm"
   },
   "about": {
     "title": "О ASCII Converter",
-    "description": "Конвертируйте любое изображение в ASCII-арт мгновенно"
+    "description": "Конвертируйте любое изображение в ASCII-арт мгновенно",
+    "features": "Возможности",
+    "feature1": "Конвертация изображений в ASCII-арт",
+    "feature2": "Поддержка анимированных GIF",
+    "feature3": "Настройка набора символов",
+    "feature4": "Экспорт в TXT, PNG и GIF",
+    "techStack": "Технологии",
+    "tryIt": "Попробовать"
   }
 }

@@ -69,10 +69,18 @@
   "footer": {
     "madeWith": "Made with ♥",
     "by": "by",
-    "author": "Polina"
+    "author": "Polina",
+    "authorUrl": "https://github.com/lina-whm"
   },
   "about": {
     "title": "About ASCII Converter",
-    "description": "Convert any image to ASCII art instantly"
+    "description": "Convert any image to ASCII art instantly",
+    "features": "Features",
+    "feature1": "Convert images to ASCII art",
+    "feature2": "Animated GIF support",
+    "feature3": "Customizable charset and settings",
+    "feature4": "Export to TXT, PNG, and GIF",
+    "techStack": "Tech Stack",
+    "tryIt": "Try it now"
   }
 }

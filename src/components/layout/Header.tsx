@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 
 export function Header() {
   const t = useTranslations("header");
+  const tFooter = useTranslations("footer");
   const router = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
@@ -36,13 +37,13 @@ export function Header() {
 
         <nav className="flex items-center gap-4 text-xs">
           <a
-            href="#about"
+            href="/about"
             className="text-[var(--text-secondary)] hover:text-[var(--accent-green)] transition-colors"
           >
             {t("about")}
           </a>
           <a
-            href="https://github.com"
+            href={tFooter("authorUrl")}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--text-secondary)] hover:text-[var(--accent-green)] transition-colors"
