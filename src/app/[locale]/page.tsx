@@ -30,7 +30,24 @@ export default function Home() {
   const [gifFrames, setGifFrames] = useState<string[]>([]);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isTabVisible, setIsTabVisible] = useState(true);
   const animationRef = useRef<number | null>(null);
+
+  // Pause animation when tab is not visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const visible = document.visibilityState === "visible";
+      setIsTabVisible(visible);
+      if (!visible) {
+        setIsPlaying(false);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const activeFile = files.find((f) => f.id === activeFileId);
   const currentSettings = activeFile?.settings || settings;
@@ -180,9 +197,17 @@ export default function Home() {
 
   const handleRemoveFile = useCallback((id: string) => {
     setFiles((prev) => {
+      const fileToRemove = prev.find((f) => f.id === id);
+      if (fileToRemove) {
+        if (fileToRemove.dataUrl.startsWith("data:")) {
+          URL.revokeObjectURL(fileToRemove.dataUrl);
+        }
+      }
       const remaining = prev.filter((f) => f.id !== id);
       if (activeFileId === id) {
         setActiveFileId(remaining[0]?.id || null);
+        setGifFrames([]);
+        setIsPlaying(false);
       }
       return remaining;
     });
@@ -197,7 +222,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!isPlaying || gifFrames.length <= 1) {
+    if (!isPlaying || gifFrames.length <= 1 || !isTabVisible) {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
@@ -225,7 +250,21 @@ export default function Home() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isPlaying, gifFrames.length, activeFile?.gifDelays]);
+  }, [isPlaying, gifFrames.length, activeFile?.gifDelays, isTabVisible]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      files.forEach((f) => {
+        if (f.dataUrl.startsWith("data:")) {
+          URL.revokeObjectURL(f.dataUrl);
+        }
+      });
+    };
+  }, []);
 
   return (
     <div className="flex-1 p-4 md:p-6">

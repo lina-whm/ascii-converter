@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useCallback, useRef, useEffect } from "react";
 import { AsciiSettings, DEFAULT_CHARSETS } from "@/lib/ascii-converter";
 import { cn } from "@/lib/utils";
 
@@ -9,8 +10,44 @@ interface SettingsPanelProps {
   onSettingsChange: (settings: Partial<AsciiSettings>) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function useDebounceCallback<T extends (...args: any[]) => any>(
+  callback: T,
+  delay: number
+): T {
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const callbackRef = useRef(callback);
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
+
+  const debouncedCallback = useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        callbackRef.current(...args);
+      }, delay);
+    },
+    [delay]
+  ) as T;
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  return debouncedCallback;
+}
+
 export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps) {
   const t = useTranslations("settings");
+  const debouncedOnChange = useDebounceCallback(onSettingsChange, 150);
 
   return (
     <div className="panel space-y-4">
@@ -24,7 +61,7 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
             min={40}
             max={300}
             value={settings.width}
-            onChange={(e) => onSettingsChange({ width: parseInt(e.target.value) })}
+            onChange={(e) => debouncedOnChange({ width: parseInt(e.target.value) })}
             className="flex-1"
             style={{
               appearance: "none",
@@ -122,7 +159,7 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
             min={4}
             max={16}
             value={settings.fontSize}
-            onChange={(e) => onSettingsChange({ fontSize: parseInt(e.target.value) })}
+            onChange={(e) => debouncedOnChange({ fontSize: parseInt(e.target.value) })}
             className="flex-1"
             style={{
               appearance: "none",
