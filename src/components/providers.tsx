@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { NextIntlClientProvider, useLocale } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 import { Toaster } from "sonner";
 import en from "@/i18n/messages/en.json";
 import ru from "@/i18n/messages/ru.json";
@@ -10,21 +10,12 @@ const messages = { en, ru };
 
 interface ProvidersProps {
   children: ReactNode;
+  locale?: string;
 }
 
-function NextIntlProvider({ children }: { children: ReactNode }) {
-  const locale = useLocale();
-
+export function Providers({ children, locale = "en" }: ProvidersProps) {
   return (
     <NextIntlClientProvider locale={locale} messages={messages[locale as keyof typeof messages]}>
-      {children}
-    </NextIntlClientProvider>
-  );
-}
-
-export function Providers({ children }: ProvidersProps) {
-  return (
-    <NextIntlProvider>
       <Toaster
         position="bottom-right"
         theme="dark"
@@ -39,6 +30,6 @@ export function Providers({ children }: ProvidersProps) {
         }}
       />
       {children}
-    </NextIntlProvider>
+    </NextIntlClientProvider>
   );
 }

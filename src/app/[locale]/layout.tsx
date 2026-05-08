@@ -21,13 +21,17 @@ export const viewport: Viewport = {
   themeColor: "#0D0D0D",
 };
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+
   return (
-    <Providers>
+    <Providers locale={locale}>
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
