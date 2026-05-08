@@ -241,15 +241,23 @@ export default function Home() {
                   )}
                 >
                   <span className="max-w-[100px] truncate">{file.file.name}</span>
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRemoveFile(file.id);
                     }}
-                    className="text-[var(--text-muted)] hover:text-[var(--error)]"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.stopPropagation();
+                        handleRemoveFile(file.id);
+                      }
+                    }}
+                    className="text-[var(--text-muted)] hover:text-[var(--error)] cursor-pointer"
                   >
                     <X className="w-3 h-3" />
-                  </button>
+                  </span>
                 </button>
               ))}
             </div>

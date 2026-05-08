@@ -23,7 +23,7 @@ export function Header() {
         <div className="font-mono text-xs">
           <pre className="text-[var(--accent-green)] leading-none">
 {`┌─────────────┐
-│ CONVERTER   │
+│ CONVERTER  │
 └─────────────┘`}
           </pre>
         </div>
