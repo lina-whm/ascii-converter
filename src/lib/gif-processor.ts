@@ -12,21 +12,35 @@ export interface GifProcessingResult {
   error?: string;
 }
 
-function createFrameFromImage(img: HTMLImageElement, targetWidth: number, backgroundColor: string = "#0D0D0D"): GifFrame {
-  const aspectRatio = img.width / img.height;
-  const targetHeight = Math.round(targetWidth / aspectRatio / 2);
-
+function resizeImageIfNeeded(
+  img: HTMLImageElement,
+  maxPixels: number
+): HTMLCanvasElement {
+  const { width, height } = img;
+  const currentPixels = width * height;
+  
+  if (currentPixels <= maxPixels) {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0);
+    return canvas;
+  }
+  
+  const scale = Math.sqrt(maxPixels / currentPixels);
+  const newWidth = Math.floor(width * scale);
+  const newHeight = Math.floor(height * scale);
+  
   const canvas = document.createElement("canvas");
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
+  canvas.width = newWidth;
+  canvas.height = newHeight;
   const ctx = canvas.getContext("2d")!;
-
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, targetWidth, targetHeight);
-  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-  const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
-
-  return { imageData, delay: 100 };
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, newWidth, newHeight);
+  
+  return canvas;
 }
 
 export async function extractGifFrames(
@@ -91,22 +105,16 @@ export async function extractGifFrames(
           return;
         }
 
-        const aspectRatio = img.width / img.height;
+        const resizedCanvas = resizeImageIfNeeded(img, MAX_IMAGE_PIXELS);
+        const gifWidth = resizedCanvas.width;
+        const gifHeight = resizedCanvas.height;
+        const aspectRatio = gifWidth / gifHeight;
         const targetHeight = Math.round(targetWidth / aspectRatio / 2);
 
-        const baseCanvas = document.createElement("canvas");
-        baseCanvas.width = targetWidth;
-        baseCanvas.height = targetHeight;
-        const baseCtx = baseCanvas.getContext("2d")!;
-        
-        const bgColor = "#0D0D0D";
-        baseCtx.fillStyle = bgColor;
-        baseCtx.fillRect(0, 0, targetWidth, targetHeight);
-
-        const patchCanvas = document.createElement("canvas");
-        patchCanvas.width = img.width;
-        patchCanvas.height = img.height;
-        const patchCtx = patchCanvas.getContext("2d")!;
+        const canvas = document.createElement("canvas");
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const ctx = canvas.getContext("2d")!;
 
         const result: GifFrame[] = [];
         const maxFrames = Math.min(frames.length, MAX_GIF_FRAMES);
@@ -114,61 +122,40 @@ export async function extractGifFrames(
         for (let i = 0; i < maxFrames; i++) {
           const frame = frames[i];
           
-          patchCtx.fillStyle = bgColor;
+          const patchCanvas = document.createElement("canvas");
+          patchCanvas.width = gifWidth;
+          patchCanvas.height = gifHeight;
+          const patchCtx = patchCanvas.getContext("2d")!;
+
+          patchCtx.fillStyle = "transparent";
           patchCtx.fillRect(0, 0, patchCanvas.width, patchCanvas.height);
 
-          if (frame.patch) {
-            const imgData = patchCtx.createImageData(
-              frame.dims.width,
-              frame.dims.height
-            );
-            
-            const patchData = frame.patch;
-            for (let j = 0; j < patchData.length; j++) {
-              const colorIndex = patchData[j];
-              const palette = frame.colorTable;
-              
-              if (palette && colorIndex !== frame.transparentIndex) {
-                const r = palette[colorIndex * 3] || 0;
-                const g = palette[colorIndex * 3 + 1] || 0;
-                const b = palette[colorIndex * 3 + 2] || 0;
-                imgData.data[j * 4] = r;
-                imgData.data[j * 4 + 1] = g;
-                imgData.data[j * 4 + 2] = b;
-                imgData.data[j * 4 + 3] = 255;
-              }
-            }
-            
-            patchCtx.putImageData(imgData, frame.dims.left, frame.dims.top);
-          }
+          const imgData = patchCtx.createImageData(
+            frame.dims.width,
+            frame.dims.height
+          );
+          imgData.data.set(frame.patch);
+          patchCtx.putImageData(imgData, frame.dims.left, frame.dims.top);
 
-          if (frame.disposalType === 2) {
-            baseCtx.fillStyle = bgColor;
-            baseCtx.fillRect(0, 0, targetWidth, targetHeight);
-          }
-
-          baseCtx.drawImage(
+          ctx.clearRect(0, 0, targetWidth, targetHeight);
+          ctx.drawImage(
             patchCanvas,
-            0,
-            0,
-            img.width,
-            img.height,
             0,
             0,
             targetWidth,
             targetHeight
           );
 
-          const imageData = baseCtx.getImageData(0, 0, targetWidth, targetHeight);
+          const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
           result.push({
             imageData,
-            delay: Math.max(frame.delay || 100, 50),
+            delay: frame.delay || 100,
           });
         }
 
         clearTimeout(timeout);
         resolve({ success: true, frames: result });
-      } catch (error) {
+      } catch {
         clearTimeout(timeout);
         const fallback = createFrameFromImage(img, targetWidth);
         resolve({ success: true, frames: [fallback] });
@@ -182,4 +169,19 @@ export async function extractGifFrames(
     
     img.src = dataUrl;
   });
+}
+
+function createFrameFromImage(img: HTMLImageElement, targetWidth: number): GifFrame {
+  const aspectRatio = img.width / img.height;
+  const targetHeight = Math.round(targetWidth / aspectRatio / 2);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext("2d")!;
+
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+  const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+
+  return { imageData, delay: 100 };
 }
