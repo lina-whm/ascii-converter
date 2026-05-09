@@ -1,0 +1,32 @@
+#!/bin/bash
+
+echo "Running Gitleaks pre-commit hook..."
+
+# Check if gitleaks is installed
+if ! command -v gitleaks &> /dev/null; then
+    echo "Gitleaks not found. Installing..."
+    if command -v brew &> /dev/null; then
+        brew install gitleaks
+    elif command -v apt-get &> /dev/null; then
+        sudo apt-get install gitleaks
+    else
+        echo "Please install gitleaks: https://github.com/gitleaks/gitleaks"
+        exit 1
+    fi
+fi
+
+# Run gitleaks
+gitleaks protect --staged --cfg-path ./gitleaks.toml
+
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+    echo "No secrets found!"
+elif [ $EXIT_CODE -eq 1 ]; then
+    echo "Secrets detected! Commit aborted."
+    echo "Please remove secrets or use --allow-new to bypass (not recommended)."
+    exit 1
+else
+    echo "Gitleaks error occurred."
+    exit $EXIT_CODE
+fi

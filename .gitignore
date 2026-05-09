@@ -1,8 +1,8 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
+# ================================
+# ЗАВИСИМОСТИ
+# ================================
+node_modules/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,32 +10,64 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# ================================
+# СБОРКА ПРОЕКТА
+# ================================
+.next/
+out/
+build/
 
-# next.js
-/.next/
-/out/
+# ================================
+# ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ
+# ================================
+.env
+.env*.local
+.env.development
+.env.production
+!.env.example
 
-# production
-/build
+# ================================
+# КЭШ И АРТЕФАКТЫ
+# ================================
+*.tsbuildinfo
+next-env.d.ts
+coverage/
 
-# misc
+# ================================
+# ФАЙЛЫ ОПЕРАЦИОННЫХ СИСТЕМ
+# ================================
 .DS_Store
-*.pem
+Thumbs.db
 
-# debug
+# ================================
+# ЛОГИ
+# ================================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ================================
+# ИНСТРУМЕНТЫ РАЗРАБОТКИ
+# ================================
+.vscode/
+.idea/
+*.pem
 
-# vercel
+# ================================
+# VERCEL
+# ================================
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ================================
+# OPENCODE (сессии)
+# ================================
+.git/opencode
+
+# ================================
+# TEMP FILES
+# ================================
+tmp/
+temp/
+*.tmp
+*.temp
