@@ -312,9 +312,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex-1 p-4 md:p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="flex-1 p-4 md:p-6 min-h-0 flex flex-col">
+      <div className="max-w-6xl mx-auto w-full min-h-0 flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
           <div className="space-y-4">
             <FileUploader onFileLoad={handleFileLoad} />
             
@@ -335,7 +335,7 @@ export default function Home() {
             )}
           </div>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 min-h-[300px] lg:min-h-0">
             <AsciiPreview
               ascii={currentAscii}
               settings={currentSettings}

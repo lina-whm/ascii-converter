@@ -79,3 +79,5 @@ public/demo-files/*
 !public/demo-files/.gitkeep
 screenshots/
 test-outputs/
+
+.vercel

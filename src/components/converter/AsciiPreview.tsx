@@ -86,8 +86,8 @@ export function AsciiPreview({
         : "#888888";
 
   return (
-    <div className="panel flex flex-col h-full">
-      <div className="panel-header flex items-center justify-between">
+    <div className="panel flex flex-col min-h-[300px] md:min-h-0 md:h-full">
+      <div className="panel-header flex items-center justify-between shrink-0">
         <span>{t("preview.title")}</span>
         {showControls && (
           <span className="text-xs text-[var(--text-muted)]">
@@ -97,7 +97,7 @@ export function AsciiPreview({
       </div>
 
       <div 
-        className="flex-1 overflow-hidden relative rounded"
+        className="flex-1 overflow-hidden relative rounded min-h-0"
         style={{ backgroundColor }}
         ref={containerRef}
       >
