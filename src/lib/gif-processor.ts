@@ -127,17 +127,42 @@ export async function extractGifFrames(
           patchCanvas.height = gifHeight;
           const patchCtx = patchCanvas.getContext("2d")!;
 
-          patchCtx.fillStyle = "transparent";
+          patchCtx.fillStyle = "#0D0D0D";
           patchCtx.fillRect(0, 0, patchCanvas.width, patchCanvas.height);
 
-          const imgData = patchCtx.createImageData(
-            frame.dims.width,
-            frame.dims.height
-          );
-          imgData.data.set(frame.patch);
-          patchCtx.putImageData(imgData, frame.dims.left, frame.dims.top);
+          if (frame.patch && frame.colorTable) {
+            const imgData = patchCtx.createImageData(
+              frame.dims.width,
+              frame.dims.height
+            );
+            
+            const palette = frame.colorTable;
+            const transparentIndex = frame.transparentIndex;
+            
+            for (let j = 0; j < frame.patch.length; j++) {
+              const colorIndex = frame.patch[j];
+              
+              if (colorIndex === transparentIndex) {
+                imgData.data[j * 4 + 3] = 0;
+              } else {
+                const r = palette[colorIndex * 3] || 0;
+                const g = palette[colorIndex * 3 + 1] || 0;
+                const b = palette[colorIndex * 3 + 2] || 0;
+                imgData.data[j * 4] = r;
+                imgData.data[j * 4 + 1] = g;
+                imgData.data[j * 4 + 2] = b;
+                imgData.data[j * 4 + 3] = 255;
+              }
+            }
+            
+            patchCtx.putImageData(imgData, frame.dims.left, frame.dims.top);
+          }
 
-          ctx.clearRect(0, 0, targetWidth, targetHeight);
+          if (frame.disposalType === 2) {
+            ctx.fillStyle = "#0D0D0D";
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
+          }
+
           ctx.drawImage(
             patchCanvas,
             0,
@@ -149,7 +174,7 @@ export async function extractGifFrames(
           const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
           result.push({
             imageData,
-            delay: frame.delay || 100,
+            delay: Math.max(frame.delay || 100, 50),
           });
         }
 
