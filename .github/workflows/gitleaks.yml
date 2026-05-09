@@ -24,11 +24,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Gitleaks
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/scripts/install.sh | sh -s -- -b /tmp
-
       - name: Run Gitleaks
-        run: |
-          /tmp/gitleaks detect --source . --config-path .gitleaks.toml --no-color --exit-code
-        continue-on-error: false
+        uses: docker://zricethezav/gitleaks:latest
+        with:
+          args: detect --source . --config-path .gitleaks.toml --no-color --exit-code
