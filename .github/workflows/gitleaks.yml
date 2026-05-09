@@ -24,7 +24,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Gitleaks
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/scripts/install.sh | sh -s -- -b /tmp
+
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v3
-        env:
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE || '' }}
+        run: |
+          /tmp/gitleaks detect --source . --config-path .gitleaks.toml --no-color --exit-code
+        continue-on-error: false
