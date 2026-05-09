@@ -71,3 +71,11 @@ tmp/
 temp/
 *.tmp
 *.temp
+
+# ================================
+# DEMO AND TEST FILES
+# ================================
+public/demo-files/*
+!public/demo-files/.gitkeep
+screenshots/
+test-outputs/

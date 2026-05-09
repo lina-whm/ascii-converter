@@ -1,5 +1,10 @@
 # ASCII Converter
 
+![Локальная обработка](https://img.shields.io/badge/обработка-локально%20в%20браузере-success?style=flat-square&logo=javascript)
+![Без секретов](https://img.shields.io/badge/secrets%20scanning-clean-brightgreen?style=flat-square&logo=gitleaks)
+![Лицензия MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
+
 Веб-приложение для преобразования изображений и GIF в ASCII-арт.
 
 ## Возможности
@@ -16,15 +21,16 @@
 - Поддержка очереди файлов (до 5)
 - Русский и английский языки
 
-## Безопасность
+## Безопасность и приватность
 
 ### Локальная обработка
 
-**Все файлы обрабатываются локально в вашем браузере. На сервер ничего не передаётся.**
+**Все файлы обрабатываются исключительно в вашем браузере. На сервер ничего не передаётся.**
 
 - Изображения загружаются через Canvas API в память браузера
 - Данные не хранятся на внешних серверах
-- Нет аналитики или трекинга
+- Метаданные (EXIF) автоматически удаляются при обработке
+- Мы не используем куки и не собираем аналитику
 
 ### Защита от злоупотреблений
 
@@ -36,12 +42,12 @@
 
 ## Технологии
 
-- Next.js 16
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- next-intl
-- gifuct-js
+- [Next.js 16](https://nextjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Framer Motion](https://www.framer.com/)
+- [next-intl](https://next-intl.vercel.app/)
+- [gifuct-js](https://github.com/0xSheDany/gifuct-js)
 
 ## Запуск
 

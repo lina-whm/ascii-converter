@@ -36,6 +36,22 @@ export default function Home() {
   const [isTabVisible, setIsTabVisible] = useState(true);
   const animationRef = useRef<number | null>(null);
 
+  // Console welcome message
+  useEffect(() => {
+    console.log(
+      "%c🚀 ASCII Converter v1.0",
+      "color: #00FF41; font-weight: bold; font-size: 16px;"
+    );
+    console.log(
+      "%c🔒 All files are processed locally. No pixel leaves your browser.",
+      "color: #888; font-size: 12px;"
+    );
+    console.log(
+      "%c📂 Source code: https://github.com/lina-whm/ascii-converter",
+      "color: #888; font-size: 12px;"
+    );
+  }, []);
+
   // Pause animation when tab is not visible
   useEffect(() => {
     const handleVisibilityChange = () => {
