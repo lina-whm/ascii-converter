@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { ImagePlus, X } from "lucide-react";
+import { toast } from "sonner";
 import { FileUploader } from "@/components/converter/FileUploader";
 import { SettingsPanel } from "@/components/converter/SettingsPanel";
 import { AsciiPreview } from "@/components/converter/AsciiPreview";
@@ -117,7 +118,15 @@ export default function Home() {
       let gifDelays: number[] | undefined;
 
       if (isGif) {
-        const frames = await extractGifFrames(dataUrl, newSettings.width);
+        const result = await extractGifFrames(dataUrl, newSettings.width);
+        
+        if (!result.success || !result.frames) {
+          setIsConverting(false);
+          toast.error(result.error || "Failed to process GIF");
+          return;
+        }
+        
+        const frames = result.frames;
         gifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, newSettings));
         coloredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, newSettings));
         gifDelays = frames.map((frame) => frame.delay);
@@ -178,7 +187,15 @@ export default function Home() {
         setIsConverting(true);
 
         if (activeFile.isGif) {
-          const frames = await extractGifFrames(activeFile.dataUrl, updated.width);
+          const result = await extractGifFrames(activeFile.dataUrl, updated.width);
+          
+          if (!result.success || !result.frames) {
+            setIsConverting(false);
+            toast.error(result.error || "Failed to process GIF");
+            return;
+          }
+          
+          const frames = result.frames;
           const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, updated));
           const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, updated));
           const newGifDelays = frames.map((frame) => frame.delay);

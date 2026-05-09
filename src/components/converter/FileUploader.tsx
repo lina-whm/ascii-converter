@@ -4,7 +4,8 @@ import { useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Upload, Link, Image, X } from "lucide-react";
 import { toast } from "sonner";
-import { validateFileSync, sanitizeCharset, ALLOWED_TYPES, MAX_FILE_SIZE } from "@/lib/validators";
+import { validateFileSync, ALLOWED_TYPES, MAX_FILE_SIZE } from "@/lib/validators";
+import { validateUrl } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 interface FileUploaderProps {
@@ -114,6 +115,13 @@ export function FileUploader({ onFileLoad }: FileUploaderProps) {
 
     setIsLoading(true);
     try {
+      const urlValidation = await validateUrl(urlInput);
+      if (!urlValidation.valid) {
+        toast.error(urlValidation.error || "Invalid URL");
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(urlInput, {
         mode: "cors",
       });
