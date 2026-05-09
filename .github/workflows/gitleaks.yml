@@ -30,4 +30,4 @@ jobs:
           mv gitleaks /usr/local/bin/
 
       - name: Run Gitleaks
-        run: gitleaks detect --source . -c .gitleaks.toml --exit-code
+        run: gitleaks detect --source . -c .gitleaks.toml --exit-code 1
