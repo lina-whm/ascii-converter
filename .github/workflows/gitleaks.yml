@@ -17,20 +17,17 @@ jobs:
   scan:
     name: Scan for secrets
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.23'
-
-      - name: Install Gitleaks
-        run: go install github.com/gitleaks/gitleaks/v9@latest
+      - name: Download Gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v1.25.1/gitleaks-linux-amd64.tar.gz | tar -xz
+          mv gitleaks /usr/local/bin/
 
       - name: Run Gitleaks
-        run: gitleaks detect --source . --config-path .gitleaks.toml --no-color --exit-code
+        run: gitleaks detect --source . --config-path .gitleaks.toml --exit-code
