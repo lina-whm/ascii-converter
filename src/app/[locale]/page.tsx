@@ -84,7 +84,7 @@ export default function Home() {
   }, [activeFile?.gifFrames]);
 
   const convertToAscii = useCallback(
-    async (dataUrl: string, convertSettings: AsciiSettings): Promise<{ ascii: string; colored: AsciiLine[] }> => {
+    async (dataUrl: string, convertSettings: AsciiSettings): Promise<{ ascii: string; colored: AsciiLine[]; settings: AsciiSettings }> => {
       return new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
@@ -92,12 +92,8 @@ export default function Home() {
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d")!;
           
-          const aspectRatio = img.width / img.height;
-          const targetWidth = convertSettings.width;
-          const targetHeight = Math.round(targetWidth / aspectRatio / 2);
-          
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
+          canvas.width = img.width;
+          canvas.height = img.height;
           
           if (convertSettings.smoothing) {
             ctx.imageSmoothingEnabled = true;
@@ -106,14 +102,15 @@ export default function Home() {
             ctx.imageSmoothingEnabled = false;
           }
           
-          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+          ctx.drawImage(img, 0, 0, img.width, img.height);
           
-          const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
-          const ascii = imageDataToAscii(imageData, convertSettings);
-          const colored = imageDataToColoredAscii(imageData, convertSettings);
-          resolve({ ascii, colored });
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          const settings = { ...convertSettings, width: img.width };
+          const ascii = imageDataToAscii(imageData, settings);
+          const colored = imageDataToColoredAscii(imageData, settings);
+          resolve({ ascii, colored, settings });
         };
-        img.onerror = () => resolve({ ascii: "", colored: [] });
+        img.onerror = () => resolve({ ascii: "", colored: [], settings: convertSettings });
         img.src = dataUrl;
       });
     },
@@ -212,14 +209,16 @@ export default function Home() {
           }
           
           const frames = result.frames;
-          const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, updated));
-          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, updated));
+          const frameWidth = frames[0].imageData.width;
+          const settingsWithWidth = { ...updated, width: frameWidth };
+          const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, settingsWithWidth));
+          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, settingsWithWidth));
           const newGifDelays = frames.map((frame) => frame.delay);
           
           setFiles((prev) =>
             prev.map((f) =>
               f.id === activeFileId 
-                ? { ...f, ascii: newGifFrames[0], coloredAscii: newColoredGifFrames[0], gifFrames: newGifFrames, coloredGifFrames: newColoredGifFrames, gifDelays: newGifDelays, settings: updated } 
+                ? { ...f, ascii: newGifFrames[0], coloredAscii: newColoredGifFrames[0], gifFrames: newGifFrames, coloredGifFrames: newColoredGifFrames, gifDelays: newGifDelays, settings: settingsWithWidth } 
                 : f
             )
           );
@@ -229,7 +228,7 @@ export default function Home() {
           const result = await convertToAscii(activeFile.dataUrl, updated);
           setFiles((prev) =>
             prev.map((f) =>
-              f.id === activeFileId ? { ...f, ascii: result.ascii, coloredAscii: result.colored, settings: updated } : f
+              f.id === activeFileId ? { ...f, ascii: result.ascii, coloredAscii: result.colored, settings: result.settings } : f
             )
           );
         }

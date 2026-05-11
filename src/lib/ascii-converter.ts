@@ -81,16 +81,13 @@ export function imageDataToAscii(
   imageData: ImageData,
   settings: AsciiSettings
 ): string {
-  const { width: targetWidth, charset, invertBrightness, smoothing, colorMode } = settings;
+  const { charset, invertBrightness, smoothing, colorMode } = settings;
   const srcWidth = imageData.width;
   const srcHeight = imageData.height;
   
-  const aspectRatio = srcWidth / srcHeight;
-  const targetHeight = Math.round(targetWidth / aspectRatio / 2);
-  
   const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = targetWidth;
-  tempCanvas.height = targetHeight;
+  tempCanvas.width = srcWidth;
+  tempCanvas.height = srcHeight;
   const ctx = tempCanvas.getContext("2d")!;
   
   const srcCanvas = document.createElement("canvas");
@@ -106,22 +103,22 @@ export function imageDataToAscii(
     ctx.imageSmoothingEnabled = false;
   }
   
-  ctx.drawImage(srcCanvas, 0, 0, targetWidth, targetHeight);
+  ctx.drawImage(srcCanvas, 0, 0, srcWidth, srcHeight);
   
-  const scaledData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+  const scaledData = ctx.getImageData(0, 0, srcWidth, srcHeight);
   const pixels = scaledData.data;
   
   let result = "";
-  for (let y = 0; y < targetHeight; y++) {
-    for (let x = 0; x < targetWidth; x++) {
-      const i = (y * targetWidth + x) * 4;
+  for (let y = 0; y < srcHeight; y++) {
+    for (let x = 0; x < srcWidth; x++) {
+      const i = (y * srcWidth + x) * 4;
       const r = pixels[i];
       const g = pixels[i + 1];
       const b = pixels[i + 2];
       const brightness = getGrayscale(r, g, b);
       result += getCharForBrightness(brightness, charset, invertBrightness);
     }
-    if (y < targetHeight - 1) result += "\n";
+    if (y < srcHeight - 1) result += "\n";
   }
   
   return result;
@@ -131,16 +128,13 @@ export function imageDataToColoredAscii(
   imageData: ImageData,
   settings: AsciiSettings
 ): AsciiLine[] {
-  const { width: targetWidth, charset, invertBrightness, smoothing, colorMode } = settings;
+  const { charset, invertBrightness, smoothing, colorMode } = settings;
   const srcWidth = imageData.width;
   const srcHeight = imageData.height;
   
-  const aspectRatio = srcWidth / srcHeight;
-  const targetHeight = Math.round(targetWidth / aspectRatio / 2);
-  
   const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = targetWidth;
-  tempCanvas.height = targetHeight;
+  tempCanvas.width = srcWidth;
+  tempCanvas.height = srcHeight;
   const ctx = tempCanvas.getContext("2d")!;
   
   const srcCanvas = document.createElement("canvas");
@@ -156,17 +150,17 @@ export function imageDataToColoredAscii(
     ctx.imageSmoothingEnabled = false;
   }
   
-  ctx.drawImage(srcCanvas, 0, 0, targetWidth, targetHeight);
+  ctx.drawImage(srcCanvas, 0, 0, srcWidth, srcHeight);
   
-  const scaledData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+  const scaledData = ctx.getImageData(0, 0, srcWidth, srcHeight);
   const pixels = scaledData.data;
   
   const result: AsciiLine[] = [];
   
-  for (let y = 0; y < targetHeight; y++) {
+  for (let y = 0; y < srcHeight; y++) {
     const line: AsciiLine = { chars: [] };
-    for (let x = 0; x < targetWidth; x++) {
-      const i = (y * targetWidth + x) * 4;
+    for (let x = 0; x < srcWidth; x++) {
+      const i = (y * srcWidth + x) * 4;
       const r = pixels[i];
       const g = pixels[i + 1];
       const b = pixels[i + 2];

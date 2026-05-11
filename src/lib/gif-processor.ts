@@ -108,16 +108,14 @@ export async function extractGifFrames(
         const resizedCanvas = resizeImageIfNeeded(img, MAX_IMAGE_PIXELS);
         const gifWidth = resizedCanvas.width;
         const gifHeight = resizedCanvas.height;
-        const aspectRatio = gifWidth / gifHeight;
-        const targetHeight = Math.round(targetWidth / aspectRatio / 2);
 
         const canvas = document.createElement("canvas");
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
+        canvas.width = gifWidth;
+        canvas.height = gifHeight;
         const ctx = canvas.getContext("2d")!;
         
         ctx.fillStyle = "#0D0D0D";
-        ctx.fillRect(0, 0, targetWidth, targetHeight);
+        ctx.fillRect(0, 0, gifWidth, gifHeight);
 
         const result: GifFrame[] = [];
         const maxFrames = Math.min(frames.length, MAX_GIF_FRAMES);
@@ -142,18 +140,18 @@ export async function extractGifFrames(
 
           if (frame.disposalType === 2) {
             ctx.fillStyle = "#0D0D0D";
-            ctx.fillRect(0, 0, targetWidth, targetHeight);
+            ctx.fillRect(0, 0, gifWidth, gifHeight);
           }
 
           ctx.drawImage(
             patchCanvas,
             0,
             0,
-            targetWidth,
-            targetHeight
+            gifWidth,
+            gifHeight
           );
 
-          const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+          const imageData = ctx.getImageData(0, 0, gifWidth, gifHeight);
           result.push({
             imageData,
             delay: Math.max(frame.delay || 100, 50),
