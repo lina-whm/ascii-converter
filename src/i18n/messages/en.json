@@ -35,7 +35,21 @@
       "dense": "Dense █▓▒░",
       "classic": "Classic .:-=+*#%@",
       "braille": "Braille ⣿⣾"
-    }
+    },
+    "adjustments": "Adjustments",
+    "reset": "Reset",
+    "basicAdjustments": "Basic Image",
+    "advancedAdjustments": "Advanced",
+    "brightness": "Brightness",
+    "contrast": "Contrast",
+    "saturation": "Saturation",
+    "hue": "Hue",
+    "grayscale": "Grayscale",
+    "sepia": "Sepia",
+    "invertColors": "Invert",
+    "threshold": "Threshold",
+    "sharpness": "Sharpness",
+    "edgeDetection": "Edge Detection"
   },
   "preview": {
     "title": "Preview",

@@ -5,9 +5,10 @@ import { ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { FileUploader } from "@/components/converter/FileUploader";
 import { SettingsPanel } from "@/components/converter/SettingsPanel";
+import { AdjustmentsPanel } from "@/components/converter/AdjustmentsPanel";
 import { AsciiPreview } from "@/components/converter/AsciiPreview";
 import { ExportPanel } from "@/components/converter/ExportPanel";
-import { AsciiSettings, DEFAULT_SETTINGS, imageDataToAscii, imageDataToColoredAscii, AsciiLine, ColorMode } from "@/lib/ascii-converter";
+import { AsciiSettings, DEFAULT_SETTINGS, imageDataToAscii, imageDataToColoredAscii, AsciiLine, ColorMode, ImageAdjustments, DEFAULT_ADJUSTMENTS } from "@/lib/ascii-converter";
 import { extractGifFrames } from "@/lib/gif-processor";
 import { useSettings } from "@/hooks/useSettings";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ interface FileItem {
   dataUrl: string;
   isGif: boolean;
   settings: AsciiSettings;
+  adjustments: ImageAdjustments;
   ascii: string;
   coloredAscii?: AsciiLine[];
   gifFrames?: string[];
@@ -26,7 +28,7 @@ interface FileItem {
 }
 
 export default function Home() {
-  const { settings, updateSettings } = useSettings();
+  const { settings, adjustments, updateSettings, updateAdjustments } = useSettings();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
   const [isConverting, setIsConverting] = useState(false);
@@ -70,6 +72,7 @@ export default function Home() {
 
   const activeFile = files.find((f) => f.id === activeFileId);
   const currentSettings = activeFile?.settings || settings;
+  const currentAdjustments = activeFile?.adjustments || adjustments;
   const currentAscii = activeFile?.ascii || "";
 
   useEffect(() => {
@@ -84,30 +87,30 @@ export default function Home() {
   }, [activeFile?.gifFrames]);
 
   const convertToAscii = useCallback(
-    async (dataUrl: string, convertSettings: AsciiSettings): Promise<{ ascii: string; colored: AsciiLine[]; settings: AsciiSettings }> => {
+    async (dataUrl: string, convertSettings: AsciiSettings, imgAdjustments: ImageAdjustments): Promise<{ ascii: string; colored: AsciiLine[]; settings: AsciiSettings }> => {
       return new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d")!;
-          
+
           canvas.width = img.width;
           canvas.height = img.height;
-          
+
           if (convertSettings.smoothing) {
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = "high";
           } else {
             ctx.imageSmoothingEnabled = false;
           }
-          
+
           ctx.drawImage(img, 0, 0, img.width, img.height);
-          
+
           const imageData = ctx.getImageData(0, 0, img.width, img.height);
           const settings = { ...convertSettings, width: img.width };
-          const ascii = imageDataToAscii(imageData, settings);
-          const colored = imageDataToColoredAscii(imageData, settings);
+          const ascii = imageDataToAscii(imageData, settings, imgAdjustments);
+          const colored = imageDataToColoredAscii(imageData, settings, imgAdjustments);
           resolve({ ascii, colored, settings });
         };
         img.onerror = () => resolve({ ascii: "", colored: [], settings: convertSettings });
@@ -140,13 +143,13 @@ export default function Home() {
         }
         
         const frames = result.frames;
-        gifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, newSettings));
-        coloredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, newSettings));
+        gifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, newSettings, adjustments));
+        coloredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, newSettings, adjustments));
         gifDelays = frames.map((frame) => frame.delay);
         ascii = gifFrames[0] || "";
         coloredAscii = coloredGifFrames[0] || [];
       } else {
-        const result = await convertToAscii(dataUrl, newSettings);
+        const result = await convertToAscii(dataUrl, newSettings, adjustments);
         ascii = result.ascii;
         coloredAscii = result.colored;
       }
@@ -163,6 +166,7 @@ export default function Home() {
         dataUrl,
         isGif,
         settings: newSettings,
+        adjustments,
         ascii,
         coloredAscii,
         gifFrames,
@@ -179,7 +183,64 @@ export default function Home() {
         setIsPlaying(true);
       }
     },
-    [files.length, settings, convertToAscii]
+    [files.length, settings, adjustments, convertToAscii]
+  );
+
+  const handleAdjustmentsChange = useCallback(
+    async (newAdjustments: Partial<ImageAdjustments>) => {
+      const updated = { ...currentAdjustments, ...newAdjustments };
+
+      if (activeFile) {
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === activeFileId ? { ...f, adjustments: updated } : f
+          )
+        );
+      } else {
+        updateAdjustments(newAdjustments);
+      }
+
+      if (activeFile?.dataUrl) {
+        setIsConverting(true);
+
+        if (activeFile.isGif) {
+          const result = await extractGifFrames(activeFile.dataUrl, activeFile.settings.width);
+          
+          if (!result.success || !result.frames) {
+            setIsConverting(false);
+            toast.error(result.error || "Failed to process GIF");
+            return;
+          }
+          
+          const frames = result.frames;
+          const frameWidth = frames[0].imageData.width;
+          const settingsWithWidth = { ...activeFile.settings, width: frameWidth };
+          const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, settingsWithWidth, updated));
+          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, settingsWithWidth, updated));
+          const newGifDelays = frames.map((frame) => frame.delay);
+          
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === activeFileId 
+                ? { ...f, ascii: newGifFrames[0], coloredAscii: newColoredGifFrames[0], gifFrames: newGifFrames, coloredGifFrames: newColoredGifFrames, gifDelays: newGifDelays, adjustments: updated } 
+                : f
+            )
+          );
+          setGifFrames(newGifFrames);
+          setCurrentFrame(0);
+        } else {
+          const result = await convertToAscii(activeFile.dataUrl, activeFile.settings, updated);
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === activeFileId ? { ...f, ascii: result.ascii, coloredAscii: result.colored, adjustments: updated } : f
+            )
+          );
+        }
+
+        setIsConverting(false);
+      }
+    },
+    [activeFile, activeFileId, currentAdjustments, convertToAscii, updateAdjustments]
   );
 
   const handleSettingsChange = useCallback(
@@ -211,8 +272,8 @@ export default function Home() {
           const frames = result.frames;
           const frameWidth = frames[0].imageData.width;
           const settingsWithWidth = { ...updated, width: frameWidth };
-          const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, settingsWithWidth));
-          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, settingsWithWidth));
+          const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, settingsWithWidth, activeFile.adjustments));
+          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, settingsWithWidth, activeFile.adjustments));
           const newGifDelays = frames.map((frame) => frame.delay);
           
           setFiles((prev) =>
@@ -225,7 +286,7 @@ export default function Home() {
           setGifFrames(newGifFrames);
           setCurrentFrame(0);
         } else {
-          const result = await convertToAscii(activeFile.dataUrl, updated);
+          const result = await convertToAscii(activeFile.dataUrl, updated, activeFile.adjustments);
           setFiles((prev) =>
             prev.map((f) =>
               f.id === activeFileId ? { ...f, ascii: result.ascii, coloredAscii: result.colored, settings: result.settings } : f
@@ -320,6 +381,11 @@ export default function Home() {
             <SettingsPanel
               settings={currentSettings}
               onSettingsChange={handleSettingsChange}
+            />
+
+            <AdjustmentsPanel
+              adjustments={currentAdjustments}
+              onAdjustmentsChange={handleAdjustmentsChange}
             />
             
             {activeFile && (

@@ -35,7 +35,21 @@
       "dense": "Плотный █▓▒░",
       "classic": "Классический .:-=+*#%@",
       "braille": "Брайлевский ⣿⣾"
-    }
+    },
+    "adjustments": "Настройка изображения",
+    "reset": "Сброс",
+    "basicAdjustments": "Базовые",
+    "advancedAdjustments": "Дополнительно",
+    "brightness": "Яркость",
+    "contrast": "Контраст",
+    "saturation": "Насыщенность",
+    "hue": "Оттенок",
+    "grayscale": "Оттенки серого",
+    "sepia": "Сепия",
+    "invertColors": "Инверсия",
+    "threshold": "Порог",
+    "sharpness": "Резкость",
+    "edgeDetection": "Контуры"
   },
   "preview": {
     "title": "Предпросмотр",
