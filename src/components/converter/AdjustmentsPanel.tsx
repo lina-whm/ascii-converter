@@ -72,10 +72,7 @@ function Slider({ label, value, min, max, step = 1, unit = "", onChange }: {
         onChange={(e) => debouncedOnChange(parseFloat(e.target.value))}
         className="w-full"
         style={{
-          appearance: "none",
-          height: "4px",
           background: `linear-gradient(to right, var(--accent-green) ${((value - min) / (max - min)) * 100}%, var(--bg-tertiary) ${((value - min) / (max - min)) * 100}%)`,
-          borderRadius: "2px",
         }}
       />
     </div>

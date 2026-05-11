@@ -186,7 +186,8 @@ export function asciiToImage(
   fontSize: number,
   invert: boolean,
   charset: string,
-  _colorMode: ColorMode = "green",
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  colorMode: ColorMode = "green",
   coloredData?: AsciiLine[]
 ): string {
   const lines = coloredData || ascii.split("\n").map((l) => ({

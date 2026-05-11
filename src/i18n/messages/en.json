@@ -11,16 +11,12 @@
     "dropTitle": "Drop file here",
     "dropSubtitle": "or click to select",
     "paste": "Paste from clipboard (Ctrl+V)",
-    "url": "Load from URL",
-    "demo": "Load demo",
     "supported": "JPEG, PNG, WebP, GIF (max 30MB)",
     "error": {
       "invalid": "Invalid file format",
       "size": "File too large (max 30MB)",
       "parse": "Failed to parse image"
-    },
-    "urlPlaceholder": "Enter image URL...",
-    "loadBtn": "Load"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -82,8 +78,7 @@
     "remove": "Remove"
   },
   "footer": {
-    "madeWith": "Made with ♥",
-    "by": "by",
+    "madeWith": "Made with ",
     "author": "Polina",
     "authorUrl": "https://github.com/lina-whm"
   },
@@ -97,6 +92,13 @@
     "feature4": "Export to TXT, PNG, and GIF",
     "techStack": "Tech Stack",
     "tryIt": "Try it now",
-    "back": "Back to Converter"
+    "back": "Back to Converter",
+    "contribute": "Feedback & Contributions",
+    "contributeDesc": "Found a bug or have an idea for improvement? I would be happy to hear your feedback!",
+    "reportBug": "Report a Bug",
+    "suggestFeature": "Suggest Feature",
+    "privacy": "Privacy & Security",
+    "privacyTitle": "All processing happens locally",
+    "privacyDesc": "Your images are processed directly in your browser. No data is sent to any server. Your files never leave your device."
   }
 }

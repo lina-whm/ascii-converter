@@ -9,7 +9,8 @@ export function Footer() {
     <footer className="bg-[var(--bg-secondary)] border-t border-[var(--border)] py-3 px-4">
       <div className="max-w-6xl mx-auto flex items-center justify-between text-xs text-[var(--text-muted)]">
         <span>
-          {t("madeWith")} {t("by")}{" "}
+          {t("madeWith")}{" "}
+          <span style={{ color: "#00FF41" }}>♥</span>{" "}
           <a
             href={t("authorUrl")}
             target="_blank"

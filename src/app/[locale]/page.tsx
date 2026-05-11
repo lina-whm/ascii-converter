@@ -99,7 +99,7 @@ export default function Home() {
           const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
           const settings = { ...convertSettings, width: targetWidth };
           const ascii = imageDataToAscii(imageData, settings, imgAdjustments);
-          const colored = imageDataToColoredAscii(imageData, settings, imgAdjustments);
+          const colored = imageDataToColoredAscii(imageData, settings);
           resolve({ ascii, colored, settings });
         };
         img.onerror = () => resolve({ ascii: "", colored: [], settings: convertSettings });
@@ -133,7 +133,7 @@ export default function Home() {
         
         const frames = result.frames;
         gifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, newSettings, adjustments));
-        coloredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, newSettings, adjustments));
+        coloredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, newSettings));
         gifDelays = frames.map((frame) => frame.delay);
         ascii = gifFrames[0] || "";
         coloredAscii = coloredGifFrames[0] || [];
@@ -205,7 +205,7 @@ export default function Home() {
           const frameWidth = frames[0].imageData.width;
           const settingsWithWidth = { ...activeFile.settings, width: frameWidth };
           const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, settingsWithWidth, updated));
-          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, settingsWithWidth, updated));
+          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, settingsWithWidth));
           const newGifDelays = frames.map((frame) => frame.delay);
           
           setFiles((prev) =>
@@ -262,7 +262,7 @@ export default function Home() {
           const frameWidth = frames[0].imageData.width;
           const settingsWithWidth = { ...updated, width: frameWidth };
           const newGifFrames = frames.map((frame) => imageDataToAscii(frame.imageData, settingsWithWidth, activeFile.adjustments));
-          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, settingsWithWidth, activeFile.adjustments));
+          const newColoredGifFrames = frames.map((frame) => imageDataToColoredAscii(frame.imageData, settingsWithWidth));
           const newGifDelays = frames.map((frame) => frame.delay);
           
           setFiles((prev) =>
@@ -346,9 +346,9 @@ export default function Home() {
         animationRef.current = null;
       }
     };
-  }, [isPlaying, gifFrames.length, activeFile?.gifDelays, isTabVisible]);
+  }, [isPlaying, gifFrames, activeFile?.gifDelays, isTabVisible]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount - intentionally runs only once
   useEffect(() => {
     return () => {
       if (animationRef.current !== null) {
@@ -360,6 +360,7 @@ export default function Home() {
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -385,8 +386,12 @@ export default function Home() {
                 isGif={activeFile.isGif}
                 canExport={!!currentAscii}
                 gifFrames={activeFile.gifFrames}
+                coloredGifFrames={activeFile.coloredGifFrames}
                 fontSize={currentSettings.fontSize}
                 invertBrightness={currentSettings.invertBrightness}
+                gifDelays={activeFile.gifDelays}
+                colorMode={currentSettings.colorMode}
+                coloredAscii={activeFile.coloredAscii}
               />
             )}
           </div>
@@ -399,6 +404,7 @@ export default function Home() {
               isGif={activeFile?.isGif}
               gifFrames={gifFrames}
               coloredFrames={activeFile?.coloredGifFrames}
+              coloredAscii={activeFile?.coloredAscii}
               currentFrame={currentFrame}
               isPlaying={isPlaying}
               onFrameChange={handleFrameChange}

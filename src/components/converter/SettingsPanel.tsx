@@ -63,12 +63,6 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
             value={settings.width}
             onChange={(e) => debouncedOnChange({ width: parseInt(e.target.value) })}
             className="flex-1"
-            style={{
-              appearance: "none",
-              height: "4px",
-              background: "var(--bg-tertiary)",
-              borderRadius: "2px",
-            }}
           />
           <span className="text-xs text-[var(--accent-green)] w-10 text-right">
             {settings.width}
@@ -186,12 +180,6 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
             value={settings.fontSize}
             onChange={(e) => debouncedOnChange({ fontSize: parseInt(e.target.value) })}
             className="flex-1"
-            style={{
-              appearance: "none",
-              height: "4px",
-              background: "var(--bg-tertiary)",
-              borderRadius: "2px",
-            }}
           />
           <span className="text-xs text-[var(--accent-orange)] w-8 text-right">
             {settings.fontSize}px

@@ -8,31 +8,31 @@ export function downloadTxt(content: string, filename: string = "ascii-art.txt")
   URL.revokeObjectURL(url);
 }
 
-export function downloadPng(ascii: string, filename: string = "ascii-art.png") {
+export function downloadPng(ascii: string, fontSize: number = 10, color: string = "#00FF41") {
   const lines = ascii.split("\n");
   const height = lines.length;
   const width = Math.max(...lines.map((l) => l.length));
   
-  const fontSize = 10;
+  const scale = 2;
   const canvas = document.createElement("canvas");
-  canvas.width = width * fontSize * 0.6;
-  canvas.height = height * fontSize;
+  canvas.width = Math.ceil(width * fontSize * 0.6 * scale);
+  canvas.height = Math.ceil(height * fontSize * scale);
   const ctx = canvas.getContext("2d")!;
   
   ctx.fillStyle = "#0D0D0D";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  ctx.font = `${fontSize}px JetBrains Mono, monospace`;
-  ctx.fillStyle = "#00FF41";
+  ctx.font = `${fontSize * scale}px monospace`;
+  ctx.fillStyle = color;
   ctx.textBaseline = "top";
   
   lines.forEach((line, y) => {
-    ctx.fillText(line, 0, y * fontSize);
+    ctx.fillText(line, 0, y * fontSize * scale);
   });
   
   const dataUrl = canvas.toDataURL("image/png");
   const a = document.createElement("a");
   a.href = dataUrl;
-  a.download = filename;
+  a.download = "ascii-art.png";
   a.click();
 }

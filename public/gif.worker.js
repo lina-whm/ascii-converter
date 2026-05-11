@@ -1,0 +1,2 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-array-constructor */
+self.onmessage=function(a){var b,c,d,e,f,h,k;try{var l=a.data;if(!l)p(null);else{var m=l.o,n=l.d;m=JSON.parse(m);var q=m.length;n=n.buffer||n;var r=new Uint8Array(n);d=[];e=0;for(b=0;b<q;b++)f=m[b].d,r.subarray(e,e+f).set(r.slice(e,e+f)),e+=f;d.push.apply(d,r);k=[];for(b=0;b<q;b++)f=d.subarray(b*b,b*b+b),k.push({d:f,p:m[b].c});p(k)}}catch(s){p(s)}};function p(a){self.postMessage(a)}

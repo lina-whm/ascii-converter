@@ -158,7 +158,7 @@ export async function extractGifFrames(
           const imageData = ctx.getImageData(0, 0, processWidth, processHeight);
           result.push({
             imageData,
-            delay: (frame.delay || 8) * 10,
+            delay: Math.round((frame.delay || 8) * 10),
           });
         }
 

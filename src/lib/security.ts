@@ -1,14 +1,3 @@
-const ALLOWED_DOMAINS = [
-  /^https?:\/\/[\w.-]+\.githubusercontent\.com$/i,
-  /^https?:\/\/i\.imgur\.com$/i,
-  /^https?:\/\/media\.giphy\.com$/i,
-  /^https?:\/\/cdn\.discordapp\.com$/i,
-  /^https?:\/\/[\w.-]+\.discordapp\.net$/i,
-  /^https?:\/\/[\w.-]+\.twimg\.com$/i,
-  /^https?:\/\/pbs\.twimg\.com$/i,
-  /^https?:\/\/[\w.-]+\.tenor\.com$/i,
-];
-
 const BLOCKED_IP_PATTERNS = [
   /^10\./i,
   /^172\.(1[6-9]|2\d|3[01])\./i,
@@ -68,16 +57,6 @@ export async function validateUrl(urlString: string): Promise<{ valid: boolean; 
     
     if (!isValidHostname(hostname)) {
       return { valid: false, error: "This URL points to a private or protected address" };
-    }
-    
-    const allowedByDomain = ALLOWED_DOMAINS.some((pattern) => {
-      const fullUrl = parsed.protocol + "//" + parsed.host + parsed.pathname;
-      const hostOnly = parsed.protocol + "//" + parsed.host;
-      return pattern.test(fullUrl) || pattern.test(hostOnly);
-    });
-    
-    if (!allowedByDomain) {
-      return { valid: false, error: "URL must be from a trusted image hosting service" };
     }
     
     return { valid: true };

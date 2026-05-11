@@ -2,10 +2,9 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Upload, Link, Image } from "lucide-react";
+import { Upload, Image } from "lucide-react";
 import { toast } from "sonner";
 import { validateFileSync, ALLOWED_TYPES, MAX_FILE_SIZE } from "@/lib/validators";
-import { validateUrl } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 interface FileUploaderProps {
@@ -15,9 +14,6 @@ interface FileUploaderProps {
 export function FileUploader({ onFileLoad }: FileUploaderProps) {
   const t = useTranslations("upload");
   const [isDragOver, setIsDragOver] = useState(false);
-  const [showUrlInput, setShowUrlInput] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processFile = useCallback(
@@ -110,63 +106,6 @@ export function FileUploader({ onFileLoad }: FileUploaderProps) {
     [processFile]
   );
 
-  const handleUrlLoad = useCallback(async () => {
-    if (!urlInput.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const urlValidation = await validateUrl(urlInput);
-      if (!urlValidation.valid) {
-        toast.error(urlValidation.error || "Invalid URL");
-        setIsLoading(false);
-        return;
-      }
-
-      const response = await fetch(urlInput, {
-        mode: "cors",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const mimeType = blob.type;
-
-      if (!ALLOWED_TYPES.includes(mimeType)) {
-        toast.error(t("error.invalid"));
-        setIsLoading(false);
-        return;
-      }
-
-      const file = new File([blob], "url-image", { type: mimeType });
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        const isGif = mimeType === "image/gif";
-        onFileLoad(file, reader.result as string, isGif);
-        setShowUrlInput(false);
-        setUrlInput("");
-        setIsLoading(false);
-      };
-
-      reader.onerror = () => {
-        toast.error(t("error.parse"));
-        setIsLoading(false);
-      };
-
-      reader.readAsDataURL(file);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "";
-      if (message.includes("Failed to fetch") || message.includes("CORS") || message.includes("NetworkError")) {
-        toast.error("CORS error: Cannot load image from this URL. Try downloading the image first.");
-      } else {
-        toast.error(t("error.parse"));
-      }
-      setIsLoading(false);
-    }
-  }, [urlInput, onFileLoad, t]);
-
   return (
     <div
       className={cn(
@@ -196,7 +135,7 @@ export function FileUploader({ onFileLoad }: FileUploaderProps) {
         <p className="text-xs text-[var(--text-muted)]">{t("supported")}</p>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-2">
+      <div className="mt-4 pt-4 border-t border-[var(--border)]">
         <button
           type="button"
           className="w-full text-xs text-[var(--text-secondary)] hover:text-[var(--accent-green)] flex items-center justify-center gap-2"
@@ -219,41 +158,10 @@ export function FileUploader({ onFileLoad }: FileUploaderProps) {
             });
           }}
         >
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <Image className="w-4 h-4" />
           {t("paste")}
         </button>
-
-        <button
-          type="button"
-          className="w-full text-xs text-[var(--text-secondary)] hover:text-[var(--accent-orange)] flex items-center justify-center gap-2"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowUrlInput(!showUrlInput);
-          }}
-        >
-          <Link className="w-4 h-4" />
-          {t("url")}
-        </button>
-
-        {showUrlInput && (
-          <div className="flex gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-            <input
-              type="url"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              placeholder={t("urlPlaceholder")}
-              className="input-field flex-1"
-            />
-            <button
-              type="button"
-              onClick={handleUrlLoad}
-              disabled={isLoading || !urlInput.trim()}
-              className="btn-primary text-xs"
-            >
-              {t("loadBtn")}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

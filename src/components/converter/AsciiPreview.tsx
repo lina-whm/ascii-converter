@@ -144,14 +144,7 @@ function GifCanvasRenderer({
         animationRef.current = null;
       }
     };
-  }, [isPlaying, frames.length, delays, renderFrame, onFrameChange]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas && frames[currentFrame]) {
-      renderFrame(canvas, currentFrame);
-    }
-  }, [currentFrame, frames, renderFrame]);
+  }, [isPlaying, frames.length, delays, renderFrame, onFrameChange, currentFrame]);
 
   return (
     <div ref={containerRef} className="w-full h-full flex items-center justify-center p-2">
@@ -170,6 +163,7 @@ interface AsciiPreviewProps {
   isGif?: boolean;
   gifFrames?: string[];
   coloredFrames?: AsciiLine[][];
+  coloredAscii?: AsciiLine[];
   currentFrame?: number;
   isPlaying?: boolean;
   onFrameChange?: (frame: number) => void;
@@ -186,6 +180,8 @@ const ColoredAsciiRenderer = memo(function ColoredAsciiRenderer({
   useGlow: boolean;
 }) {
   const charWidth = fontSize * 0.6;
+  const maxCols = Math.max(...lines.map(l => l.chars.length));
+  const totalWidth = maxCols * charWidth;
 
   return (
     <div
@@ -194,6 +190,9 @@ const ColoredAsciiRenderer = memo(function ColoredAsciiRenderer({
         fontSize: `${fontSize}px`,
         lineHeight: "1.2",
         whiteSpace: "pre",
+        position: "relative",
+        display: "inline-block",
+        width: `${totalWidth}px`,
       }}
     >
       {lines.map((line, y) => (
@@ -224,6 +223,7 @@ function AsciiPreviewInner({
   isGif,
   gifFrames,
   coloredFrames,
+  coloredAscii,
   currentFrame = 0,
   isPlaying,
   onFrameChange,
@@ -238,8 +238,8 @@ function AsciiPreviewInner({
   const showControls = isGif && gifFrames && gifFrames.length > 1;
 
   const useColored = settings.colorMode === "original";
-  const coloredLines = useColored && coloredFrames
-    ? (isGif ? coloredFrames[currentFrame] : coloredFrames[0])
+  const coloredLines = useColored
+    ? (isGif ? coloredFrames?.[currentFrame] : coloredAscii)
     : null;
 
   const backgroundColor = settings.invertBrightness ? "#FFFFFF" : "#0D0D0D";
@@ -334,6 +334,7 @@ function AsciiPreviewInner({
             currentFrame={currentFrame}
             isPlaying={isPlaying || false}
             onFrameChange={onFrameChange!}
+            onPlayPause={onPlayPause!}
           />
         ) : coloredLines ? (
           <div className="flex items-center justify-center w-full h-full p-4">
