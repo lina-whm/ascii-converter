@@ -36,7 +36,7 @@ export default function Home() {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isTabVisible, setIsTabVisible] = useState(true);
-  const animationRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const animationRef = useRef<number | null>(null);
 
   // Console welcome message
   useEffect(() => {
@@ -335,27 +335,31 @@ export default function Home() {
   useEffect(() => {
     if (!isPlaying || gifFrames.length <= 1 || !isTabVisible) {
       if (animationRef.current !== null) {
-        clearTimeout(animationRef.current);
+        cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
       }
       return;
     }
 
+    let lastTime = performance.now();
     const delays = activeFile?.gifDelays || gifFrames.map(() => 80);
     let frameIndex = 0;
-    setCurrentFrame(0);
 
-    const animate = () => {
-      frameIndex = (frameIndex + 1) % gifFrames.length;
-      setCurrentFrame(frameIndex);
-      animationRef.current = window.setTimeout(animate, delays[frameIndex] || 80);
+    const animate = (time: number) => {
+      const delay = delays[frameIndex] || 80;
+      if (time - lastTime >= delay) {
+        frameIndex = (frameIndex + 1) % gifFrames.length;
+        setCurrentFrame(frameIndex);
+        lastTime = time;
+      }
+      animationRef.current = requestAnimationFrame(animate);
     };
 
-    animationRef.current = window.setTimeout(animate, delays[0] || 80);
+    animationRef.current = requestAnimationFrame(animate);
 
     return () => {
       if (animationRef.current !== null) {
-        clearTimeout(animationRef.current);
+        cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
       }
     };

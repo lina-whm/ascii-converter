@@ -98,8 +98,8 @@ export function sanitizeCharset(input: string): string {
 }
 
 export const MAX_IMAGE_PIXELS = 1920 * 1920;
-export const MAX_GIF_FRAMES = 200;
-export const MAX_GIF_TOTAL_PIXELS = 50_000_000;
+export const MAX_GIF_FRAMES = 500;
+export const MAX_GIF_TOTAL_PIXELS = 100_000_000;
 
 export function validateImageDimensions(width: number, height: number): boolean {
   return width * height <= MAX_IMAGE_PIXELS;
