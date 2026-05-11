@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { AsciiSettings, DEFAULT_SETTINGS, ImageAdjustments, DEFAULT_ADJUSTMENTS } from "@/lib/ascii-converter";
 
 const SETTINGS_KEY = "ascii-converter-settings";
-const LANGUAGE_KEY = "ascii-converter-language";
 
 interface StoredSettings {
   settings: AsciiSettings;
@@ -17,6 +16,7 @@ export function useSettings() {
   const [adjustments, setAdjustments] = useState<ImageAdjustments>(DEFAULT_ADJUSTMENTS);
   const [language, setLanguage] = useState<string>("en");
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (typeof window === "undefined") return;
     
@@ -36,6 +36,7 @@ export function useSettings() {
       setLanguage(["en", "ru"].includes(browserLang) ? browserLang : "en");
     }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const updateSettings = useCallback((newSettings: Partial<AsciiSettings>) => {
     setSettings((prev) => {

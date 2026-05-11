@@ -75,17 +75,6 @@ export default function Home() {
   const currentAdjustments = activeFile?.adjustments || adjustments;
   const currentAscii = activeFile?.ascii || "";
 
-  useEffect(() => {
-    if (activeFile?.isGif && activeFile.gifFrames) {
-      setGifFrames(activeFile.gifFrames);
-      setCurrentFrame(0);
-      setIsPlaying(true);
-    } else {
-      setGifFrames([]);
-      setIsPlaying(false);
-    }
-  }, [activeFile?.gifFrames]);
-
   const convertToAscii = useCallback(
     async (dataUrl: string, convertSettings: AsciiSettings, imgAdjustments: ImageAdjustments): Promise<{ ascii: string; colored: AsciiLine[]; settings: AsciiSettings }> => {
       return new Promise((resolve) => {

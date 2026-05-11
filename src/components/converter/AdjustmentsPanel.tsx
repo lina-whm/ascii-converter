@@ -10,6 +10,7 @@ interface AdjustmentsPanelProps {
   onAdjustmentsChange: (adjustments: Partial<ImageAdjustments>) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function useDebounceCallback<T extends (...args: any[]) => any>(
   callback: T,
   delay: number

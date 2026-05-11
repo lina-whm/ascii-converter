@@ -12,9 +12,11 @@ export function Header() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setMounted(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const toggleLanguage = () => {
     const segments = pathname.split("/");

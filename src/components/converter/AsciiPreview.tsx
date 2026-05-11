@@ -336,7 +336,7 @@ function AsciiPreviewInner({
             invert={settings.invertBrightness}
             colorMode={settings.colorMode}
             currentFrame={currentFrame}
-            isPlaying={isPlaying}
+            isPlaying={isPlaying || false}
             onFrameChange={onFrameChange!}
             onPlayPause={onPlayPause!}
           />
