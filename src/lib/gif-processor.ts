@@ -12,8 +12,8 @@ export interface GifProcessingResult {
   error?: string;
 }
 
-const MAX_PROCESS_WIDTH = 400;
-const MAX_PROCESS_HEIGHT = 300;
+const MAX_PROCESS_WIDTH = 300;
+const MAX_PROCESS_HEIGHT = 200;
 
 function createFrameFromImage(img: HTMLImageElement, targetWidth: number): GifFrame {
   const aspectRatio = img.width / img.height;
