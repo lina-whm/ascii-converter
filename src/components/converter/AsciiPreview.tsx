@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { AsciiSettings, AsciiLine } from "@/lib/ascii-converter";
 import { sanitizeHtml } from "@/lib/utils";
@@ -20,25 +20,22 @@ interface AsciiPreviewProps {
 
 function ColoredAsciiRenderer({
   lines,
-  fontSize,
-  scale = 1
+  fontSize
 }: {
   lines: AsciiLine[];
   fontSize: number;
-  scale?: number;
 }) {
-  const displayFontSize = Math.max(4, Math.round(fontSize * scale));
   return (
     <div
-      className="font-mono inline-block"
+      className="font-mono"
       style={{
-        fontSize: `${displayFontSize}px`,
+        fontSize: `${fontSize}px`,
         lineHeight: "1.2",
         whiteSpace: "pre",
       }}
     >
       {lines.map((line, y) => (
-        <div key={y} style={{ height: `${displayFontSize}px` }}>
+        <div key={y} style={{ height: `${fontSize}px` }}>
           {line.chars.map((char, x) => (
             <span
               key={x}
@@ -70,8 +67,7 @@ export function AsciiPreview({
 }: AsciiPreviewProps) {
   const t = useTranslations();
   const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
+  const [previewFontSize, setPreviewFontSize] = useState(settings.fontSize);
 
   const displayAscii = isGif && gifFrames ? gifFrames[currentFrame] : ascii;
   const showControls = isGif && gifFrames && gifFrames.length > 1;
@@ -90,34 +86,52 @@ export function AsciiPreview({
         ? "#FFFFFF"
         : "#888888";
 
-  const lines = displayAscii ? displayAscii.split('\n') : [];
-  const contentWidth = lines.length > 0 ? lines[0].length : 0;
-  const contentHeight = lines.length;
+  const calculateFit = useCallback(() => {
+    if (!containerRef.current || !displayAscii) {
+      setPreviewFontSize(settings.fontSize);
+      return;
+    }
+
+    const container = containerRef.current;
+    const padding = 32;
+    const availableWidth = container.clientWidth - padding;
+    const availableHeight = container.clientHeight - padding;
+
+    if (availableWidth <= 0 || availableHeight <= 0) return;
+
+    const lines = displayAscii.split('\n');
+    const contentWidth = lines[0]?.length || 1;
+    const contentHeight = lines.length;
+
+    const baseFontSize = settings.fontSize;
+    const charWidth = baseFontSize * 0.6;
+    const charHeight = baseFontSize;
+
+    const scaleX = availableWidth / (contentWidth * charWidth);
+    const scaleY = availableHeight / (contentHeight * charHeight);
+
+    let newFontSize = baseFontSize * Math.min(scaleX, scaleY, 1);
+    newFontSize = Math.max(2, Math.min(newFontSize, baseFontSize));
+
+    setPreviewFontSize(newFontSize);
+  }, [displayAscii, settings.fontSize]);
 
   useEffect(() => {
-    const calculateScale = () => {
-      if (!containerRef.current || !contentRef.current) return;
+    const timeoutId = setTimeout(calculateFit, 50);
 
-      const container = containerRef.current;
-      const content = contentRef.current;
+    const resizeObserver = new ResizeObserver(() => {
+      calculateFit();
+    });
 
-      const containerWidth = container.clientWidth - 16;
-      const containerHeight = container.clientHeight - 16;
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
 
-      const charWidth = settings.fontSize * 0.6;
-      const charHeight = settings.fontSize;
-
-      const scaleX = containerWidth / (contentWidth * charWidth);
-      const scaleY = containerHeight / (contentHeight * charHeight);
-
-      const newScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.1), 1);
-      setScale(newScale);
+    return () => {
+      clearTimeout(timeoutId);
+      resizeObserver.disconnect();
     };
-
-    calculateScale();
-    window.addEventListener('resize', calculateScale);
-    return () => window.removeEventListener('resize', calculateScale);
-  }, [contentWidth, contentHeight, settings.fontSize, displayAscii]);
+  }, [calculateFit]);
 
   return (
     <div className="panel flex flex-col min-h-[300px] md:min-h-0 md:h-full">
@@ -131,7 +145,7 @@ export function AsciiPreview({
       </div>
 
       <div
-        className="flex-1 overflow-hidden relative rounded min-h-0 flex items-center justify-center"
+        className="flex-1 overflow-auto relative rounded min-h-0"
         style={{ backgroundColor }}
         ref={containerRef}
       >
@@ -146,21 +160,18 @@ export function AsciiPreview({
             <span className="text-[var(--text-muted)] text-sm">{t("preview.noFile")}</span>
           </div>
         ) : coloredLines ? (
-          <div className="overflow-auto p-2 flex items-center justify-center" ref={contentRef}>
-            <ColoredAsciiRenderer lines={coloredLines} fontSize={settings.fontSize} scale={scale} />
+          <div className="flex items-center justify-center w-full h-full p-4">
+            <ColoredAsciiRenderer lines={coloredLines} fontSize={previewFontSize} />
           </div>
         ) : (
-          <div
-            className="overflow-auto p-2 flex items-center justify-center"
-            ref={contentRef}
-          >
+          <div className="flex items-center justify-center w-full h-full p-4">
             <pre
               dangerouslySetInnerHTML={{
                 __html: sanitizeHtml(displayAscii),
               }}
-              className="font-mono inline-block"
+              className="font-mono text-center"
               style={{
-                fontSize: `${Math.max(4, Math.round(settings.fontSize * scale))}px`,
+                fontSize: `${previewFontSize}px`,
                 lineHeight: "1.2",
                 whiteSpace: "pre",
                 color: textColor,
@@ -173,7 +184,7 @@ export function AsciiPreview({
         )}
 
         {showControls && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-full px-3 py-1">
+          <div className="sticky bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-full px-3 py-1">
             <button
               type="button"
               onClick={() => onFrameChange?.(Math.max(0, currentFrame - 1))}
