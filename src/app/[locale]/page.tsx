@@ -36,7 +36,7 @@ export default function Home() {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isTabVisible, setIsTabVisible] = useState(true);
-  const animationRef = useRef<number | null>(null);
+  const animationRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Console welcome message
   useEffect(() => {
@@ -334,31 +334,29 @@ export default function Home() {
 
   useEffect(() => {
     if (!isPlaying || gifFrames.length <= 1 || !isTabVisible) {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+      if (animationRef.current !== null) {
+        clearTimeout(animationRef.current);
+        animationRef.current = null;
       }
       return;
     }
 
-    let lastTime = performance.now();
-    const delays = activeFile?.gifDelays || Array(gifFrames.length).fill(100);
+    const delays = activeFile?.gifDelays || gifFrames.map(() => 80);
     let frameIndex = 0;
+    setCurrentFrame(0);
 
-    const animate = (time: number) => {
-      const delay = delays[frameIndex] || 100;
-      if (time - lastTime >= delay) {
-        frameIndex = (frameIndex + 1) % gifFrames.length;
-        setCurrentFrame(frameIndex);
-        lastTime = time;
-      }
-      animationRef.current = requestAnimationFrame(animate);
+    const animate = () => {
+      frameIndex = (frameIndex + 1) % gifFrames.length;
+      setCurrentFrame(frameIndex);
+      animationRef.current = window.setTimeout(animate, delays[frameIndex] || 80);
     };
 
-    animationRef.current = requestAnimationFrame(animate);
+    animationRef.current = window.setTimeout(animate, delays[0] || 80);
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+      if (animationRef.current !== null) {
+        clearTimeout(animationRef.current);
+        animationRef.current = null;
       }
     };
   }, [isPlaying, gifFrames.length, activeFile?.gifDelays, isTabVisible]);
@@ -366,8 +364,8 @@ export default function Home() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+      if (animationRef.current !== null) {
+        clearTimeout(animationRef.current);
       }
       files.forEach((f) => {
         if (f.dataUrl.startsWith("data:")) {
