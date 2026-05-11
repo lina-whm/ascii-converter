@@ -93,22 +93,28 @@ export default function Home() {
         img.crossOrigin = "anonymous";
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d")!;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
 
-          canvas.width = img.width;
-          canvas.height = img.height;
+          const MAX_SIZE = 600;
+          let drawWidth = img.width;
+          let drawHeight = img.height;
 
-          if (convertSettings.smoothing) {
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = "high";
-          } else {
-            ctx.imageSmoothingEnabled = false;
+          if (drawWidth > MAX_SIZE || drawHeight > MAX_SIZE) {
+            const scale = MAX_SIZE / Math.max(drawWidth, drawHeight);
+            drawWidth = Math.round(drawWidth * scale);
+            drawHeight = Math.round(drawHeight * scale);
           }
 
-          ctx.drawImage(img, 0, 0, img.width, img.height);
+          canvas.width = drawWidth;
+          canvas.height = drawHeight;
 
-          const imageData = ctx.getImageData(0, 0, img.width, img.height);
-          const settings = { ...convertSettings, width: img.width };
+          ctx.imageSmoothingEnabled = convertSettings.smoothing;
+          ctx.imageSmoothingQuality = "high";
+
+          ctx.drawImage(img, 0, 0, drawWidth, drawHeight);
+
+          const imageData = ctx.getImageData(0, 0, drawWidth, drawHeight);
+          const settings = { ...convertSettings, width: drawWidth };
           const ascii = imageDataToAscii(imageData, settings, imgAdjustments);
           const colored = imageDataToColoredAscii(imageData, settings, imgAdjustments);
           resolve({ ascii, colored, settings });
