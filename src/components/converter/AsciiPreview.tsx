@@ -25,7 +25,6 @@ function GifCanvasRenderer({
   currentFrame,
   isPlaying,
   onFrameChange,
-  onPlayPause,
 }: GifCanvasRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,7 +33,6 @@ function GifCanvasRenderer({
   const frameIndexRef = useRef<number>(0);
 
   const backgroundColor = invert ? "#FFFFFF" : "#0D0D0D";
-  const textColor = invert ? "#000000" : colorMode === "green" ? "#00FF41" : colorMode === "white" ? "#FFFFFF" : "#888888";
   const useGlow = !invert && colorMode === "green";
 
   const renderFrame = useCallback((canvas: HTMLCanvasElement, frameIndex: number) => {
@@ -181,12 +179,10 @@ interface AsciiPreviewProps {
 const ColoredAsciiRenderer = memo(function ColoredAsciiRenderer({
   lines,
   fontSize,
-  textColor,
   useGlow
 }: {
   lines: AsciiLine[];
   fontSize: number;
-  textColor: string;
   useGlow: boolean;
 }) {
   const charWidth = fontSize * 0.6;
@@ -338,11 +334,10 @@ function AsciiPreviewInner({
             currentFrame={currentFrame}
             isPlaying={isPlaying || false}
             onFrameChange={onFrameChange!}
-            onPlayPause={onPlayPause!}
           />
         ) : coloredLines ? (
           <div className="flex items-center justify-center w-full h-full p-4">
-            <ColoredAsciiRenderer lines={coloredLines} fontSize={previewFontSize} textColor={textColor} useGlow={useGlow} />
+            <ColoredAsciiRenderer lines={coloredLines} fontSize={previewFontSize} useGlow={useGlow} />
           </div>
         ) : (
           <div className="flex items-center justify-center w-full h-full p-4">

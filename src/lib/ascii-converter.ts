@@ -82,10 +82,6 @@ function buildCharLookup() {
 }
 buildCharLookup();
 
-function getGrayscale(r: number, g: number, b: number): number {
-  return (r * 4896 + g * 9632 + b * 1868) >> 14;
-}
-
 function rgbToHex(r: number, g: number, b: number): string {
   return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
 }
@@ -109,7 +105,7 @@ export function imageDataToAscii(
   settings: AsciiSettings,
   adjustments: ImageAdjustments = DEFAULT_ADJUSTMENTS
 ): string {
-  const { charset, invertBrightness } = settings;
+  const { charset } = settings;
   const { width, height, data: pixels } = imageData;
   
   const charsetLen = charset.length;
@@ -148,10 +144,9 @@ export function imageDataToAscii(
 
 export function imageDataToColoredAscii(
   imageData: ImageData,
-  settings: AsciiSettings,
-  adjustments: ImageAdjustments = DEFAULT_ADJUSTMENTS
+  settings: AsciiSettings
 ): AsciiLine[] {
-  const { charset, invertBrightness, colorMode } = settings;
+  const { charset, colorMode } = settings;
   const { width, height, data: pixels } = imageData;
 
   const useColored = colorMode === "original";
@@ -191,7 +186,7 @@ export function asciiToImage(
   fontSize: number,
   invert: boolean,
   charset: string,
-  colorMode: ColorMode = "green",
+  _colorMode: ColorMode = "green",
   coloredData?: AsciiLine[]
 ): string {
   const lines = coloredData || ascii.split("\n").map((l) => ({

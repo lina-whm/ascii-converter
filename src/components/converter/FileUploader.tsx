@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Upload, Link, Image, X } from "lucide-react";
+import { Upload, Link, Image } from "lucide-react";
 import { toast } from "sonner";
 import { validateFileSync, ALLOWED_TYPES, MAX_FILE_SIZE } from "@/lib/validators";
 import { validateUrl } from "@/lib/security";

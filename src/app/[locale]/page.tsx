@@ -8,7 +8,7 @@ import { SettingsPanel } from "@/components/converter/SettingsPanel";
 import { AdjustmentsPanel } from "@/components/converter/AdjustmentsPanel";
 import { AsciiPreview } from "@/components/converter/AsciiPreview";
 import { ExportPanel } from "@/components/converter/ExportPanel";
-import { AsciiSettings, DEFAULT_SETTINGS, imageDataToAscii, imageDataToColoredAscii, AsciiLine, ColorMode, ImageAdjustments, DEFAULT_ADJUSTMENTS } from "@/lib/ascii-converter";
+import { AsciiSettings, DEFAULT_SETTINGS, imageDataToAscii, imageDataToColoredAscii, AsciiLine, ImageAdjustments } from "@/lib/ascii-converter";
 import { extractGifFrames } from "@/lib/gif-processor";
 import { useSettings } from "@/hooks/useSettings";
 import { cn } from "@/lib/utils";

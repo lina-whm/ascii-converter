@@ -2,9 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Copy, Download, FileText, Image, Film } from "lucide-react";
+import { Copy, FileText, Image, Film } from "lucide-react";
 import { downloadTxt, downloadPng } from "@/lib/export-tools";
-import { cn } from "@/lib/utils";
 
 interface ExportPanelProps {
   ascii: string;
@@ -66,8 +65,6 @@ export function ExportPanel({
     const ctx = canvas.getContext("2d")!;
 
     const frames: string[] = [];
-
-    const delays = Array(gifFrames.length).fill(100);
 
     const renderFrame = (frameIndex: number): string => {
       const frameAscii = gifFrames[frameIndex];

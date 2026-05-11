@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useRef, useEffect } from "react";
 import { ImageAdjustments, DEFAULT_ADJUSTMENTS } from "@/lib/ascii-converter";
-import { cn } from "@/lib/utils";
 
 interface AdjustmentsPanelProps {
   adjustments: ImageAdjustments;
@@ -54,7 +53,6 @@ function Slider({ label, value, min, max, step = 1, unit = "", onChange }: {
   unit?: string;
   onChange: (value: number) => void;
 }) {
-  const t = useTranslations("settings");
   const debouncedOnChange = useDebounceCallback(onChange, 100);
 
   return (
