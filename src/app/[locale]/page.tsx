@@ -95,26 +95,20 @@ export default function Home() {
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
 
-          const MAX_SIZE = 600;
-          let drawWidth = img.width;
-          let drawHeight = img.height;
+          const aspectRatio = img.width / img.height;
+          const targetWidth = convertSettings.width;
+          const targetHeight = Math.round(targetWidth / aspectRatio / 2);
 
-          if (drawWidth > MAX_SIZE || drawHeight > MAX_SIZE) {
-            const scale = MAX_SIZE / Math.max(drawWidth, drawHeight);
-            drawWidth = Math.round(drawWidth * scale);
-            drawHeight = Math.round(drawHeight * scale);
-          }
-
-          canvas.width = drawWidth;
-          canvas.height = drawHeight;
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
 
           ctx.imageSmoothingEnabled = convertSettings.smoothing;
           ctx.imageSmoothingQuality = "high";
 
-          ctx.drawImage(img, 0, 0, drawWidth, drawHeight);
+          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-          const imageData = ctx.getImageData(0, 0, drawWidth, drawHeight);
-          const settings = { ...convertSettings, width: drawWidth };
+          const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+          const settings = { ...convertSettings, width: targetWidth };
           const ascii = imageDataToAscii(imageData, settings, imgAdjustments);
           const colored = imageDataToColoredAscii(imageData, settings, imgAdjustments);
           resolve({ ascii, colored, settings });

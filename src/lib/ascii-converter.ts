@@ -112,39 +112,15 @@ export function imageDataToAscii(
   const { charset, invertBrightness } = settings;
   const { width, height, data: pixels } = imageData;
   
-  const hasAdjustments = adjustments.brightness !== 0 || adjustments.contrast !== 0 ||
-    adjustments.saturation !== 0 || adjustments.hue !== 0 || adjustments.grayscale !== 0 ||
-    adjustments.sepia !== 0 || adjustments.invert !== 0 || adjustments.threshold < 128 ||
-    adjustments.sharpness > 0 || adjustments.edgeDetection > 0;
-
-  if (!hasAdjustments) {
-    let result = "";
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const i = (y * width + x) * 4;
-        const gray = (pixels[i] * 4896 + pixels[i + 1] * 9632 + pixels[i + 2] * 1868) >> 14;
-        const idx = (gray * (charset.length - 1) + 127) >> 8;
-        result += charset[idx] || " ";
-      }
-      if (y < height - 1) result += "\n";
-    }
-    return result;
-  }
-
-  const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = width;
-  tempCanvas.height = height;
-  const ctx = tempCanvas.getContext("2d", { willReadFrequently: true })!;
-  ctx.putImageData(imageData, 0, 0);
-  const adjusted = ctx.getImageData(0, 0, width, height).data;
-
+  const charsetLen = charset.length;
+  
   let result = "";
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const i = (y * width + x) * 4;
-      let r = adjusted[i];
-      let g = adjusted[i + 1];
-      let b = adjusted[i + 2];
+      let r = pixels[i];
+      let g = pixels[i + 1];
+      let b = pixels[i + 2];
 
       if (adjustments.brightness !== 0) {
         const delta = adjustments.brightness * 2.55;
@@ -161,7 +137,7 @@ export function imageDataToAscii(
       }
 
       const gray = (r * 4896 + g * 9632 + b * 1868) >> 14;
-      const idx = (gray * (charset.length - 1) + 127) >> 8;
+      const idx = (gray * (charsetLen - 1) + 127) >> 8;
       result += charset[idx] || " ";
     }
     if (y < height - 1) result += "\n";
