@@ -5,10 +5,6 @@
 ![Лицензия MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
 
-## 🌐 Live Demo
-
-[ascii-converter-zeta.vercel.app](https://ascii-converter-zeta.vercel.app)
-
 ---
 
 Веб-приложение для преобразования изображений и анимированных GIF в ASCII-арт.
